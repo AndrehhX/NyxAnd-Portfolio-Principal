@@ -46,7 +46,7 @@ const skull = `<svg class="pixel" viewBox="0 0 11 11" shape-rendering="crispEdge
 
 const slide = (s: (typeof slides)[number], i: number) => `
   <li class="slide${s.image ? "" : " slide--type"}" data-index="${i}" aria-label="${s.stamp}">
-    ${s.image ? `<img src="${s.image}" alt="" loading="lazy" decoding="async" />` : `<span class="slide__shot"></span><span class="slide__word" aria-hidden="true">${s.stamp}</span>`}
+    ${s.image ? `<img src="${s.image}" alt="" loading="lazy" decoding="async"${s.focus ? ` style="object-position:${s.focus}"` : ""} />` : `<span class="slide__shot"></span><span class="slide__word" aria-hidden="true">${s.stamp}</span>`}
     <span class="slide__stamp" aria-hidden="true"><b>${s.stamp}</b><b>${s.stamp}</b></span>
   </li>`;
 

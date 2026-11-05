@@ -100,15 +100,20 @@ export interface Slide {
   stamp: string;
   caption: string;
   image?: string;
+  /** Encuadre de la foto dentro de la tarjeta (object-position). */
+  focus?: string;
 }
 
-// Diapositivas del perfil: solo hechos reales.
+// Diapositivas del perfil: fotos propias y hechos reales.
 export const slides: readonly Slide[] = [
-  { stamp: "Orunei", image: "/media/orunei.jpg", caption: "Orunei: una plataforma social para descubrir anime y organizar tu AnimeList." },
+  { stamp: "Andreh", image: "/media/andreh.jpg", focus: "50% 38%", caption: "Andreh, la persona detrás de NyxAnd." },
+  { stamp: "Código", image: "/media/codigo.jpg", focus: "50% 30%", caption: "Programando en C: primero a mano en el cuaderno, después en la laptop con RTX." },
+  { stamp: "Circuitos", image: "/media/circuitos.jpg", focus: "50% 45%", caption: "Circuitos lógicos en protoboard, con compuertas 74LS08 y LEDs." },
+  { stamp: "UVG", image: "/media/laboratorio.jpg", focus: "50% 55%", caption: "En el laboratorio. Estudio Ingeniería en Ciencias de la Computación en la UVG desde enero de 2026." },
   { stamp: "Hackathon", caption: "Segundo lugar en el Hackathon UVG 2026, en abril." },
-  { stamp: "Kaze", image: "/media/kaze.jpg", caption: "Kaze: streaming HLS y Watch Parties sincronizadas en tiempo real." },
-  { stamp: "UVG", caption: "Estudio Ingeniería en Ciencias de la Computación en la UVG desde enero de 2026." },
+  { stamp: "Orunei", image: "/media/orunei.jpg", caption: "Orunei: una plataforma social para descubrir anime y organizar tu AnimeList." },
   { stamp: "IA", caption: "Certificación Vibe Coding con IA de Big School, en marzo de 2026." },
+  { stamp: "Café", image: "/media/cafe.jpg", focus: "50% 60%", caption: "Una pausa con café entre proyectos." },
 ];
 
 export const highlights = [
