@@ -2,6 +2,9 @@
   "name": "nyxand-portfolio",
   "private": true,
   "version": "0.1.0",
+  "description": "Portafolio personal de Dereck Andreh Callejas Ajin (NyxAnd).",
+  "author": "Dereck Andreh Callejas Ajin",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "scripts": {
     "dev": "vite",

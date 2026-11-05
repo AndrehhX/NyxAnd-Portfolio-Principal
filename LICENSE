@@ -1,0 +1,48 @@
+Copyright (c) 2026 Dereck Andreh Callejas Ajin (NyxAnd). Todos los derechos reservados.
+
+LICENCIA DE USO RESTRINGIDO
+
+Este repositorio contiene el portafolio personal de Dereck Andreh Callejas Ajin
+("el Autor"), incluidos su código fuente, diseño, animaciones, shaders, textos,
+fotografías, currículum, logotipos y la marca "NyxAnd" (en conjunto, "la Obra").
+
+1. Propiedad
+   La Obra es propiedad exclusiva del Autor. Su publicación en un repositorio
+   visible no implica ninguna cesión de derechos ni licencia de código abierto.
+
+2. Usos permitidos
+   Se permite, sin necesidad de pedir permiso:
+   a) ver y leer el código fuente;
+   b) descargarlo y ejecutarlo en un equipo propio, de forma privada, solo para
+      evaluar el trabajo del Autor;
+   c) enlazar al repositorio o al sitio publicado.
+
+3. Usos prohibidos
+   Salvo autorización previa y por escrito del Autor, queda prohibido:
+   a) copiar, reproducir o redistribuir la Obra, total o parcialmente;
+   b) modificarla o crear obras derivadas a partir de ella;
+   c) publicarla o desplegarla en cualquier dominio o servicio;
+   d) presentarla, total o parcialmente, como trabajo propio, incluido su uso
+      como portafolio, plantilla o base de otro proyecto;
+   e) usar las fotografías, el currículum, los datos personales, el logotipo
+      "Andreh" o la marca "NyxAnd" con cualquier fin;
+   f) usar la Obra con fines comerciales.
+
+4. Componentes de terceros
+   Las dependencias incluidas o referenciadas (entre ellas GSAP, Lenis y las
+   fuentes Inter Tight, Archivo y Anton) se rigen por sus propias licencias.
+   Esta licencia no restringe los derechos que esas licencias otorgan sobre
+   dichos componentes.
+
+5. Permisos
+   Para solicitar cualquier uso no previsto en la sección 2, escribe a
+   andrehcallex@gmail.com. Ningún permiso se presume concedido sin una
+   respuesta escrita del Autor.
+
+6. Sin garantía
+   La Obra se ofrece "tal cual", sin garantía de ningún tipo. El Autor no será
+   responsable de ningún daño derivado de su uso.
+
+7. Terminación
+   Cualquier uso que incumpla esta licencia pone fin de inmediato a los
+   permisos de la sección 2.
