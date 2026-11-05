@@ -174,13 +174,17 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
   // Si el equipo no llega a unos 40 fps, baja la resolucion una vez en lugar de dar tirones.
   let last = start;
   let shotTaken = false;
+  let clock = 0;
+  let timeScale = 1;
   let glow = 0;
   let slowFrames = 0;
   let sampled = 0;
   const frame = (now: number) => {
-    const t = frozen ? 0 : (now - start) / 1000;
     const delta = now - last;
     last = now;
+    timeScale += ((stage.paused ? 0 : 1) - timeScale) * 0.07;
+    clock += (Math.min(delta, 100) / 1000) * timeScale;
+    const t = frozen ? 0 : clock;
     if (maxDpr > 1 && delta < 250) {
       sampled++;
       if (delta > 25) slowFrames++;

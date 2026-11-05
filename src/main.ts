@@ -1,11 +1,13 @@
 import "./style.css";
 import "./site/sections.css";
+import "./site/pause.css";
 import { setupInteractions } from "./hero/interactions";
 import { heroMarkup } from "./hero/markup";
 import { createHero } from "./hero/renderer";
 import { setupAbout } from "./site/about";
 import { setupCursor } from "./site/cursor";
 import { setupMotion } from "./site/motion";
+import { setupPause } from "./site/pause";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 app.innerHTML = heroMarkup;
@@ -22,3 +24,4 @@ setupInteractions(app);
 setupAbout(app, reduced);
 setupMotion(app, reduced || params.has("static"));
 setupCursor(app);
+setupPause(app, reduced);

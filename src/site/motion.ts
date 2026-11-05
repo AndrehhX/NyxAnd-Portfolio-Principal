@@ -23,7 +23,6 @@ export function setupMotion(root: HTMLElement, reduced: boolean) {
     document.documentElement.classList.add("lenis-on");
     // Acceso para depurar desde la consola.
     (window as unknown as { lenis?: Lenis }).lenis = lenis;
-    root.querySelector(".menu")?.setAttribute("data-lenis-prevent", "");
   }
 
   // Enlaces internos con desplazamiento suave.

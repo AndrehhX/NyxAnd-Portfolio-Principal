@@ -1,3 +1,4 @@
+import { pauseMarkup } from "../site/pause";
 import { sectionsMarkup } from "../site/sections";
 import { content as c, links, projects } from "./content";
 
@@ -15,14 +16,6 @@ const icons = {
 const external = 'target="_blank" rel="noopener noreferrer"';
 const sectionLinks = c.sections.map((s) => `<li><a href="#${s.id}">${s.label}</a></li>`).join("");
 
-// Destinos que aparecen en el menú y en la búsqueda.
-const destinations = [
-  ...c.sections.map((s) => ({ label: s.label, hint: "Sección", href: `#${s.id}`, ext: false })),
-  ...projects.map((p) => ({ label: p.name, hint: p.kind, href: p.demo ?? p.code ?? "#proyectos", ext: !!(p.demo ?? p.code) })),
-  { label: "Currículum", hint: "PDF", href: links.cv, ext: true },
-  { label: "GitHub", hint: "AndrehhX", href: links.github, ext: true },
-];
-
 export const heroMarkup = `
   <canvas class="stage" aria-hidden="true"></canvas>
   <div class="grain" aria-hidden="true"></div>
@@ -34,7 +27,7 @@ export const heroMarkup = `
       <header class="ui">
         <a class="brand at" style="--x:65;--y:59" href="#inicio">${c.brand}</a>
         <nav class="topnav" aria-label="Principal">
-          <button class="iconbtn at" data-open-menu style="--x:229;--y:51" type="button" aria-label="Abrir menú">${icons.menu}</button>
+          <button class="iconbtn at" data-open-pause style="--x:229;--y:51" type="button" aria-label="Abrir el menú de pausa">${icons.menu}</button>
           <ul>${sectionLinks}</ul>
         </nav>
         <a class="tag at" style="--x:485;--y:51" href="${links.github}" ${external}>GitHub</a>
@@ -42,7 +35,7 @@ export const heroMarkup = `
 
       <div class="toolbar">
         <a class="iconbtn at" style="--x:272;--y:131.5" href="#proyectos" aria-label="Ver proyectos" title="Proyectos">${icons.list}</a>
-        <button class="iconbtn at" data-open-menu style="--x:342;--y:131.5" type="button" aria-label="Buscar en el portafolio" title="Buscar">${icons.search}</button>
+        <button class="iconbtn at" data-open-pause style="--x:342;--y:131.5" type="button" aria-label="Abrir el menú de pausa" title="Menú">${icons.search}</button>
         <a class="iconbtn at" style="--x:358;--y:131.5" href="${links.cv}" ${external} aria-label="Abrir currículum" title="Currículum">${icons.doc}</a>
         <a class="iconbtn at" style="--x:374;--y:131.5" href="#contacto" aria-label="Ir a contacto" title="Contacto">${icons.check}</a>
         <a class="profile at" style="--x:462;--y:131" href="#sobre-mi">Sobre mí</a>
@@ -99,20 +92,4 @@ export const heroMarkup = `
     ${sectionsMarkup}
   </main>
 
-  <dialog class="menu" aria-label="Menú y búsqueda">
-    <form method="dialog" class="menu__head">
-      <label class="sr-only" for="menu-search">Buscar proyectos y secciones</label>
-      <input id="menu-search" type="search" placeholder="Buscar proyectos y secciones" autocomplete="off" />
-      <button type="submit">Cerrar</button>
-    </form>
-    <ul class="menu__list">
-      ${destinations
-        .map(
-          (d) => `<li data-search="${`${d.label} ${d.hint}`.toLowerCase()}">
-            <a href="${d.href}" ${d.ext ? external : ""}><span>${d.label}</span><small>${d.hint}</small></a>
-          </li>`,
-        )
-        .join("")}
-    </ul>
-    <p class="menu__empty" hidden>Sin resultados. Prueba con el nombre de un proyecto.</p>
-  </dialog>`;
+  ${pauseMarkup}`;

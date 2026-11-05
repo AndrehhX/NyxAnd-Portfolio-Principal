@@ -6,6 +6,8 @@ export const stage = {
   glow: 0,
   /** Fotograma del líquido sin logo ni panel, como data URL, para reutilizarlo en las tarjetas. */
   shot: "",
+  /** El menú de pausa congela el líquido y el carrusel. */
+  paused: false,
 };
 
 export const SHOT_EVENT = "stage:shot";

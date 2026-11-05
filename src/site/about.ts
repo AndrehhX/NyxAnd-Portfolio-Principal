@@ -1,5 +1,6 @@
 import gsap from "gsap";
 import { slides as data } from "../hero/content";
+import { stage } from "../hero/state";
 
 const SLIDE_SECONDS = 6;
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
@@ -63,7 +64,7 @@ export function setupAbout(root: HTMLElement, reduced: boolean) {
   render();
 
   gsap.ticker.add((_t, deltaMs) => {
-    if (!playing || !visible) return;
+    if (!playing || !visible || stage.paused) return;
     time = (time + deltaMs / 1000) % total;
     render();
   });
