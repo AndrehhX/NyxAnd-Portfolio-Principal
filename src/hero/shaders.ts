@@ -25,28 +25,12 @@ vec2 flow(vec2 p, float t) {
   return d;
 }
 
-// Remolinos encadenados: cada iteracion deforma a la anterior, como un fluido.
-vec2 swirl(vec2 p, float t) {
-  vec2 q = p * 0.013;
-  vec2 o = q;
-  for (int i = 0; i < 4; i++) {
-    float f = float(i);
-    q += 0.55 / (1.0 + f * 0.5) * sin(q.yx * (1.6 + f * 0.55)
-      + vec2(t * (0.19 + f * 0.05), -t * (0.16 + f * 0.04))
-      + vec2(f * 1.7, f * 2.9));
-  }
-  return q - o;
-}
-
 void main() {
   vec2 p = vec2(vUv.x, 1.0 - vUv.y) * STAGE;
   // La deformaciÃ³n vale cero en t = 0: el primer fotograma es la composiciÃ³n de referencia.
   float slow = uTime * 0.55;
   vec2 q = p + flow(p, slow) - flow(p, 0.0);
   q += flow(q * 1.35 + 40.0, slow * 0.8) * 0.35 - flow(q * 1.35 + 40.0, 0.0) * 0.35;
-
-  vec2 eddy = swirl(p, slow * 1.6);
-  q += eddy * 10.0;
 
   vec2 toPointer = p - uPointer;
   q += toPointer * exp(-dot(toPointer, toPointer) / 5200.0) * uPointerForce;
@@ -63,11 +47,11 @@ void main() {
       vec2 ab = b.xy - a.xy;
       float h = clamp(dot(q - a.xy, ab) / dot(ab, ab), 0.0, 1.0);
       vec2 c = a.xy + ab * h - q;
-      float w = mix(a.z, b.z, h) * breathe * 1.24;
+      float w = mix(a.z, b.z, h) * breathe * 1.16;
       float amp = mix(a.w, b.w, h);
       float d2 = dot(c, c) / (w * w);
       // NÃºcleo denso, caÃ­da suave y un halo ancho de humo alrededor.
-      float core = exp(-pow(d2, 1.6) * 0.55);
+      float core = exp(-d2 * 0.62);
       float halo = exp(-d2 * 0.1) * 0.15;
       best = max(best, amp * max(core, halo));
     }
@@ -75,9 +59,7 @@ void main() {
     start = end;
   }
   float v = 1.0 - dark;
-  // El canal verde guarda la fase de los pliegues que dibuja la composicion.
-  float folds = 0.5 + 0.5 * sin((eddy.x - eddy.y) * 3.1);
-  color = vec4(v, folds, 0.0, 1.0);
+  color = vec4(v, v, v, 1.0);
 }`;
 
 export const compositeFrag = /* glsl */ `#version 300 es
@@ -108,7 +90,7 @@ const vec3 CREAM = vec3(0.905, 0.85, 0.735);
 
 vec3 ramp(float v) {
   vec3 c = mix(BASE, SMOKE, smoothstep(0.0, 0.5, v));
-  return mix(c, CREAM, smoothstep(0.36, 0.64, v));
+  return mix(c, CREAM, smoothstep(0.3, 0.86, v));
 }
 float hash(vec2 p) {
   vec3 q = fract(vec3(p.xyx) * 0.1031);
@@ -118,34 +100,8 @@ float hash(vec2 p) {
 
 void main() {
   vec2 frag = vUv * uRes;
-  vec4 field = texture(uLiquid, vUv);
-  float v = field.r;
+  float v = texture(uLiquid, vUv).r;
   vec3 col = ramp(v);
-
-  // Relieve del liquido a partir de su propio campo.
-  vec2 texel = 1.5 / vec2(textureSize(uLiquid, 0));
-  vec2 slope = vec2(
-    texture(uLiquid, vUv + vec2(texel.x, 0.0)).r - texture(uLiquid, vUv - vec2(texel.x, 0.0)).r,
-    texture(uLiquid, vUv + vec2(0.0, texel.y)).r - texture(uLiquid, vUv - vec2(0.0, texel.y)).r
-  );
-  vec3 normal = normalize(vec3(-slope * 6.0, 1.0));
-  vec3 halfway = normalize(vec3(-0.38, 0.56, 0.74));
-  float presence = smoothstep(0.05, 0.42, v);
-
-  // Pliegues que siguen la forma de cada banda.
-  float fold = sin(v * 15.0 + field.g * 5.0);
-  float foldMask = smoothstep(0.17, 0.34, v) * (1.0 - smoothstep(0.52, 0.8, v));
-  col += CREAM * smoothstep(0.7, 1.0, fold) * foldMask * 0.2;
-  col *= 1.0 - smoothstep(0.4, 1.0, -fold) * foldMask * 0.28;
-
-  // La crema deja de ser plana: conserva corrientes internas.
-  float crest = smoothstep(0.62, 0.96, v);
-  col *= mix(1.0, 0.9 + 0.1 * sin(field.g * 6.0 + v * 8.0), crest);
-
-  // Sombra de contacto en un lado y filo de luz en el otro.
-  col *= 1.0 - clamp(-dot(normal.xy, halfway.xy) * 1.3, 0.0, 1.0) * 0.38 * presence;
-  float spec = pow(max(dot(normal, halfway), 0.0), 42.0);
-  col += vec3(1.0, 0.965, 0.89) * spec * 0.42 * presence;
 
   vec2 pixel = vec2(frag.x, uRes.y - frag.y);
   vec2 pa = (pixel - uPanel.xy) / uPanel.zw;
