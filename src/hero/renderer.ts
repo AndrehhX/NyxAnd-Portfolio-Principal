@@ -1,5 +1,7 @@
+import { LOGO, buildLogoField } from "./logo";
 import { packRibbons } from "./liquid";
 import { VERT, compositeFrag, liquidFrag } from "./shaders";
+import { WIRES, buildWireCanvas } from "./wires";
 
 function program(gl: WebGL2RenderingContext, fs: string) {
   const compile = (type: number, source: string) => {
@@ -24,7 +26,7 @@ export interface HeroOptions {
 }
 
 export function createHero({ canvas, panel, frozen }: HeroOptions) {
-  const gl = canvas.getContext("webgl2", { antialias: false, alpha: false, powerPreference: "high-performance" });
+  const gl = canvas.getContext("webgl2", { antialias: false, alpha: false, powerPreference: "high-performance", preserveDrawingBuffer: frozen });
   if (!gl) return null;
 
   const ribbons = packRibbons();
@@ -54,6 +56,34 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
   gl.uniform1iv(L("uEnds"), ribbons.ends);
   gl.useProgram(composite);
   gl.uniform1i(C("uLiquid"), 0);
+  gl.uniform1i(C("uLogo"), 1);
+  gl.uniform1i(C("uWires"), 2);
+
+  const field = buildLogoField();
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.R16F, field.width, field.height, 0, gl.RED, gl.FLOAT, field.data);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.uniform4f(C("uLogoBox"), LOGO.x, LOGO.y, LOGO.w, LOGO.h);
+  gl.uniform2f(C("uLogoRefCenter"), LOGO.center[0], LOGO.center[1]);
+  gl.uniform2f(C("uLogoTexel"), 1 / field.width, 1 / field.height);
+
+  gl.activeTexture(gl.TEXTURE2);
+  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, buildWireCanvas());
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+  gl.generateMipmap(gl.TEXTURE_2D);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.uniform4f(C("uWireBox"), WIRES.x, WIRES.y, WIRES.w, WIRES.h);
+  gl.uniform2f(C("uWireRefAnchor"), WIRES.anchor[0], WIRES.anchor[1]);
 
   const pointer = { x: 368, y: 207, force: 0, tx: 368, ty: 207, tf: 0 };
   window.addEventListener("pointermove", (e) => {
@@ -64,15 +94,26 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
   document.documentElement.addEventListener("pointerleave", () => (pointer.tf = 0));
 
   let panelRect = new Float32Array(4);
+  const layout = { logoX: 0, logoY: 0, logoScale: 1, wireX: 0, wireY: 0, wireScale: 1 };
   const resize = () => {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(canvas.clientWidth * dpr);
     canvas.height = Math.round(canvas.clientHeight * dpr);
     const r = panel.getBoundingClientRect();
     panelRect = new Float32Array([r.left * dpr, r.top * dpr, r.width * dpr, r.height * dpr]);
+
+    const W = canvas.width;
+    const H = canvas.height;
+    const portrait = W <= H;
+    // En vertical el logo ocupa el ancho; en horizontal mantiene la proporcion de la referencia.
+    layout.logoScale = portrait ? W / 270 : Math.min(W / 736, H / 414);
+    layout.logoX = portrait ? W / 2 : (LOGO.center[0] / 736) * W;
+    layout.logoY = portrait ? H * 0.5 : (LOGO.center[1] / 414) * H;
+    layout.wireScale = portrait ? W / 400 : Math.min(W / 736, H / 414);
+    layout.wireX = portrait ? W * 0.08 : (WIRES.anchor[0] / 736) * W;
+    layout.wireY = portrait ? H * 0.66 : (WIRES.anchor[1] / 414) * H;
   };
   resize();
-  new ResizeObserver(resize).observe(canvas);
 
   const start = performance.now();
   const frame = (now: number) => {
@@ -99,11 +140,26 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
     gl.uniform1f(C("uTime"), t);
     gl.uniform1f(C("uReveal"), frozen ? 1 : Math.min(1, (now - start) / 1400));
     gl.uniform4fv(C("uPanel"), panelRect);
+    // Una deriva minima con el puntero: el logo flota y la luz lo sigue.
+    const px = frozen ? 0 : pointer.x / 368 - 1;
+    const py = frozen ? 0 : pointer.y / 207 - 1;
+    gl.uniform2f(C("uLogoCenter"), layout.logoX + px * 2.2 * layout.logoScale, layout.logoY + py * 1.4 * layout.logoScale);
+    gl.uniform1f(C("uLogoScale"), layout.logoScale);
+    gl.uniform2f(C("uWireOrigin"), layout.wireX - px * 1.1 * layout.wireScale, layout.wireY - py * 0.8 * layout.wireScale);
+    gl.uniform1f(C("uWireScale"), layout.wireScale);
+    const lx = 0.28 + px * 0.5;
+    const ly = 0.96 + py * 0.2;
+    const ll = Math.hypot(lx, ly);
+    gl.uniform2f(C("uLight"), lx / ll, ly / ll);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 
     if (!frozen) requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);
-  if (frozen) window.addEventListener("resize", () => requestAnimationFrame(frame));
+  // Asignar canvas.width borra el lienzo: el modo congelado debe volver a pintar.
+  new ResizeObserver(() => {
+    resize();
+    if (frozen) requestAnimationFrame(frame);
+  }).observe(canvas);
   return gl;
 }

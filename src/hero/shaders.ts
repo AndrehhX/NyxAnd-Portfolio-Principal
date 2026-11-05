@@ -46,12 +46,12 @@ void main() {
       vec2 ab = b.xy - a.xy;
       float h = clamp(dot(q - a.xy, ab) / dot(ab, ab), 0.0, 1.0);
       vec2 c = a.xy + ab * h - q;
-      float w = mix(a.z, b.z, h) * breathe * 1.42;
+      float w = mix(a.z, b.z, h) * breathe * 1.16;
       float amp = mix(a.w, b.w, h);
       float d2 = dot(c, c) / (w * w);
       // Núcleo denso, caída suave y un halo ancho de humo alrededor.
       float core = exp(-d2 * 0.62);
-      float halo = exp(-d2 * 0.085) * 0.2;
+      float halo = exp(-d2 * 0.1) * 0.15;
       best = max(best, amp * max(core, halo));
     }
     dark *= 1.0 - best;
@@ -70,6 +70,18 @@ uniform vec2 uRes;
 uniform float uTime;
 uniform float uReveal;
 uniform vec4 uPanel;
+uniform sampler2D uLogo;
+uniform sampler2D uWires;
+uniform vec2 uLogoCenter;
+uniform float uLogoScale;
+uniform vec4 uLogoBox;
+uniform vec2 uLogoRefCenter;
+uniform vec2 uLogoTexel;
+uniform vec2 uWireOrigin;
+uniform float uWireScale;
+uniform vec4 uWireBox;
+uniform vec2 uWireRefAnchor;
+uniform vec2 uLight;
 
 const vec3 BASE = vec3(0.066);
 const vec3 SMOKE = vec3(0.30, 0.285, 0.26);
@@ -101,6 +113,70 @@ void main() {
     vec2 glow = (pa - vec2(0.0, 0.56)) / vec2(0.36, 0.2);
     glass = mix(glass, CREAM * 1.08, exp(-dot(glow, glow)) * 0.92);
     col = glass;
+  }
+
+  // Alambres: oscuros sobre la crema, encendidos sobre el negro.
+  vec2 wp = (pixel - uWireOrigin) / uWireScale + uWireRefAnchor;
+  vec2 wt = (wp - uWireBox.xy) / uWireBox.zw;
+  if (wt.x > 0.0 && wt.x < 1.0 && wt.y > 0.0 && wt.y < 1.0) {
+    vec4 w = texture(uWires, wt);
+    if (w.a > 0.003) {
+      vec3 wc = w.rgb / w.a;
+      float l = dot(col, vec3(0.333));
+      vec3 lit = mix(vec3(0.34, 0.32, 0.29), vec3(0.98, 0.95, 0.86), wc.g);
+      vec3 ink = mix(vec3(0.05, 0.045, 0.035), vec3(0.52, 0.46, 0.36), wc.g * wc.g * 0.8);
+      col = mix(col, mix(lit, ink, smoothstep(0.2, 0.52, l)), w.a * wc.r);
+    }
+  }
+
+  // Logo: acrilico biselado que refracta el liquido que pasa por detras.
+  vec2 lp = (pixel - uLogoCenter) / uLogoScale + uLogoRefCenter;
+  vec2 lt = (lp - uLogoBox.xy) / uLogoBox.zw;
+  if (lt.x > 0.0 && lt.x < 1.0 && lt.y > 0.0 && lt.y < 1.0) {
+    float d = texture(uLogo, lt).r;
+    float aa = 0.75 / uLogoScale;
+    vec2 e = uLogoTexel * 1.5;
+    vec2 grad = vec2(
+      texture(uLogo, lt + vec2(e.x, 0.0)).r - texture(uLogo, lt - vec2(e.x, 0.0)).r,
+      texture(uLogo, lt + vec2(0.0, e.y)).r - texture(uLogo, lt - vec2(0.0, e.y)).r
+    );
+    float gl = length(grad);
+    vec2 g2 = gl > 1e-5 ? grad / gl : vec2(0.0);
+
+    // Sombra de contacto, solo visible sobre zonas claras.
+    float sv = dot(col, vec3(0.333));
+    if (d < 0.0) col *= 1.0 - exp(d * 1.5) * 0.5 * smoothstep(0.12, 0.5, sv);
+
+    float cover = smoothstep(-aa, aa, d);
+    if (cover > 0.0) {
+      float bevel = clamp(d / 1.6, 0.0, 1.0);
+      float slope = (1.0 - bevel) * (1.0 - bevel);
+      vec2 nxy = -g2 * slope;
+      vec2 refr = vUv + vec2(nxy.x, -nxy.y) * 0.016 + vec2(-0.004, 0.003);
+      float behind = textureLod(uLiquid, refr, 1.4).r;
+      vec3 bg = ramp(behind);
+      float lum = dot(bg, vec3(0.333));
+      float bright = smoothstep(0.3, 0.62, lum);
+
+      // Reflejo largo del liquido sobre la cara del cristal.
+      float sheen = textureLod(uLiquid, vec2(vUv.x * 1.6 - 0.28, vUv.y * 0.55 + 0.22), 2.6).r;
+      float streak = 0.5 + 0.5 * sin(lp.x * 0.19 + lp.y * 0.05 + 1.1);
+      vec3 face = bg * mix(0.86, 1.07, bright);
+      face += vec3(0.205, 0.2, 0.19) * (1.0 - bright) * (0.62 + 0.38 * streak);
+      face += ramp(sheen) * 0.16 * (1.0 - bright);
+
+      float facing = dot(g2 * -1.0, uLight);
+      float lightOn = smoothstep(-0.55, 0.75, facing);
+      float rim = exp(-pow((d - 0.72) / 0.36, 2.0));
+      float edge = exp(-pow((d - 0.12) / 0.2, 2.0));
+      vec3 rimCol = mix(vec3(0.97, 0.95, 0.89), vec3(0.17, 0.135, 0.09), bright);
+      float rimAmt = mix(0.26 + 0.74 * lightOn, 0.94, bright);
+      vec3 c = mix(face, rimCol, rim * rimAmt);
+      // Sobre crema, las aristas que miran a la luz recuperan un filo blanco.
+      c = mix(c, vec3(1.0, 0.98, 0.92), bright * smoothstep(0.55, 1.0, facing) * exp(-pow((d - 1.15) / 0.3, 2.0)) * 0.85);
+      c = mix(c, vec3(0.03), edge * mix(0.62, 0.3, bright));
+      col = mix(col, c, cover);
+    }
   }
 
   col *= uReveal;
