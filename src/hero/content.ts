@@ -106,14 +106,14 @@ export interface Slide {
 
 // Diapositivas del perfil: fotos propias y hechos reales.
 export const slides: readonly Slide[] = [
-  { stamp: "Andreh", image: "/media/andreh.jpg", focus: "50% 38%", caption: "Andreh, la persona detrás de NyxAnd." },
-  { stamp: "Código", image: "/media/codigo.jpg", focus: "50% 30%", caption: "Programando en C: primero a mano en el cuaderno, después en la laptop con RTX." },
-  { stamp: "Circuitos", image: "/media/circuitos.jpg", focus: "50% 45%", caption: "Circuitos lógicos en protoboard, con compuertas 74LS08 y LEDs." },
-  { stamp: "UVG", image: "/media/laboratorio.jpg", focus: "50% 55%", caption: "En el laboratorio. Estudio Ingeniería en Ciencias de la Computación en la UVG desde enero de 2026." },
+  { stamp: "Andreh", image: "/media/tono/andreh.webp", focus: "50% 38%", caption: "Andreh, la persona detrás de NyxAnd." },
+  { stamp: "Código", image: "/media/tono/codigo.webp", focus: "50% 30%", caption: "Programando en C: primero a mano en el cuaderno, después en la laptop con RTX." },
+  { stamp: "Circuitos", image: "/media/tono/circuitos.webp", focus: "50% 45%", caption: "Circuitos lógicos en protoboard, con compuertas 74LS08 y LEDs." },
+  { stamp: "UVG", image: "/media/tono/laboratorio.webp", focus: "50% 55%", caption: "En el laboratorio. Estudio Ingeniería en Ciencias de la Computación en la UVG desde enero de 2026." },
   { stamp: "Hackathon", caption: "Segundo lugar en el Hackathon UVG 2026, en abril." },
-  { stamp: "Orunei", image: "/media/orunei.jpg", caption: "Orunei: una plataforma social para descubrir anime y organizar tu AnimeList." },
+  { stamp: "Orunei", image: "/media/tono/orunei.webp", caption: "Orunei: una plataforma social para descubrir anime y organizar tu AnimeList." },
   { stamp: "Procesos", caption: "Procesos de automatización con IA." },
-  { stamp: "Café", image: "/media/cafe.jpg", focus: "50% 60%", caption: "Una pausa con café entre proyectos." },
+  { stamp: "Café", image: "/media/tono/cafe.webp", focus: "50% 60%", caption: "Una pausa con café entre proyectos." },
 ];
 
 export const highlights = [
@@ -126,6 +126,6 @@ export const highlights = [
 ] as const;
 
 export const projectImages: Record<string, string> = {
-  Orunei: "/media/orunei.jpg",
-  Kaze: "/media/kaze.jpg",
+  Orunei: "/media/orunei.webp",
+  Kaze: "/media/kaze.webp",
 };

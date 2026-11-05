@@ -49,13 +49,20 @@ export function setupMotion(root: HTMLElement, reduced: boolean) {
   });
 
   if (reduced) return;
-  document.fonts.ready.then(() => {
-    build(root);
-    ScrollTrigger.refresh();
-  });
+  // Las animaciones de scroll se preparan cuando el navegador queda libre, sin competir con la carga.
+  const idle = (cb: () => void) => ("requestIdleCallback" in window ? requestIdleCallback(cb, { timeout: 1200 }) : setTimeout(cb, 200));
+  document.fonts.ready.then(() =>
+    idle(async () => {
+      await build(root);
+      ScrollTrigger.refresh();
+    }),
+  );
 }
 
-function build(root: HTMLElement) {
+// Cede el hilo entre pasos: ninguna tarea larga bloquea la página mientras se arman las escenas.
+const pause = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+async function build(root: HTMLElement) {
   const q = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
   const qa = <T extends Element = HTMLElement>(s: string) => [...root.querySelectorAll<T>(s)];
 
@@ -67,6 +74,7 @@ function build(root: HTMLElement) {
     scrollTrigger: { trigger: ".hero", start: "top top", end: "70% top", scrub: true },
   });
 
+  await pause();
   // 2. NYXAND recortado sobre un velo negro: el líquido vive dentro de las letras y la cámara entra por la X.
   const knock = q(".knock");
   const text = q<SVGTextElement>(".knock__word text");
@@ -97,9 +105,11 @@ function build(root: HTMLElement) {
     .to(veil, { opacity: 0, duration: 0.1 }, 0.86)
     .to({}, { duration: 0.04 });
 
+  await pause();
   // 3. Títulos oscuros: letras que suben desde una máscara, punto y coma que rebota y subrayado a mano.
-  qa(".dtitle").forEach((t) => {
-    const split = SplitText.create(t.querySelector(".dtitle__word")!, { type: "chars", mask: "chars" });
+  for (const t of qa(".dtitle")) {
+    await pause();
+    const split = SplitText.create(t.querySelector(".dtitle__word")!, { type: "chars", mask: "chars", aria: "hidden" });
     gsap
       .timeline({ scrollTrigger: { trigger: t, start: "top 84%" } })
       .from(split.chars, { yPercent: 118, rotate: 9, duration: 1.1, ease: "expo.out", stagger: 0.045 })
@@ -107,8 +117,9 @@ function build(root: HTMLElement) {
       .from(t.querySelector(".dtitle__semi"), { scale: 0, rotate: -40, transformOrigin: "50% 70%", duration: 0.8, ease: "back.out(3)" }, 0.45)
       .fromTo(t.querySelectorAll(".dtitle__swoosh path"), { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.9, ease: "power3.inOut" }, 0.5)
       .fromTo(t.querySelectorAll(".dtitle__scratch path"), { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.7, stagger: 0.12, ease: "power2.out" }, 0.15);
-  });
+  }
 
+  await pause();
   // 4. Opciones que caen en cascada y se inclinan siguiendo al puntero.
   gsap.from(".option", {
     yPercent: 40,
@@ -133,6 +144,7 @@ function build(root: HTMLElement) {
     });
   });
 
+  await pause();
   // 5. La tarjeta de perfil se arma pieza por pieza.
   gsap
     .timeline({ scrollTrigger: { trigger: ".pcard", start: "top 78%" } })
@@ -149,6 +161,7 @@ function build(root: HTMLElement) {
   gsap.from(".highlight", { scale: 0.3, autoAlpha: 0, duration: 0.8, ease: "back.out(2)", stagger: 0.07, scrollTrigger: { trigger: ".highlights", start: "top 90%" } });
   gsap.from(".pcard__text > *, .pbtn", { y: 26, autoAlpha: 0, duration: 0.9, ease: "expo.out", stagger: 0.08, scrollTrigger: { trigger: ".pcard__text", start: "top 88%" } });
 
+  await pause();
   // 6. Proyectos: en escritorio la galería corre de lado y se tuerce con la velocidad del scroll.
   const mm = gsap.matchMedia();
   mm.add("(min-width: 900px) and (min-aspect-ratio: 1/1)", () => {
@@ -182,6 +195,7 @@ function build(root: HTMLElement) {
     );
   });
 
+  await pause();
   // 7. Recorrido: cada línea se traza y el cargo sube detrás de ella.
   qa(".path__item").forEach((item) => {
     gsap
@@ -190,6 +204,7 @@ function build(root: HTMLElement) {
       .from(item.querySelectorAll(".path__period, .path__role, .path__place, .path__detail"), { y: 34, autoAlpha: 0, duration: 0.9, ease: "expo.out", stagger: 0.07 }, 0.25);
   });
 
+  await pause();
   // 8. Contacto: el correo se arma letra por letra y la cinta acelera con el scroll.
   const mail = SplitText.create(q(".contact__mail"), { type: "chars", mask: "chars" });
   gsap.from(mail.chars, { yPercent: 110, duration: 1, ease: "expo.out", stagger: 0.018, scrollTrigger: { trigger: ".contact__mail", start: "top 88%" } });

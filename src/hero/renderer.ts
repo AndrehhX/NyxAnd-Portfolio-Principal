@@ -4,20 +4,25 @@ import { VERT, compositeFrag, liquidFrag } from "./shaders";
 import { SHOT_EVENT, stage } from "./state";
 import { WIRES, buildWireCanvas } from "./wires";
 
+// Compila sin consultar el estado: con KHR_parallel_shader_compile el driver trabaja en segundo plano.
 function program(gl: WebGL2RenderingContext, fs: string) {
   const compile = (type: number, source: string) => {
     const s = gl.createShader(type)!;
     gl.shaderSource(s, source);
     gl.compileShader(s);
-    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s) ?? "shader");
     return s;
   };
   const p = gl.createProgram()!;
   gl.attachShader(p, compile(gl.VERTEX_SHADER, VERT));
   gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
   gl.linkProgram(p);
-  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p) ?? "link");
   return p;
+}
+
+function verify(gl: WebGL2RenderingContext, p: WebGLProgram) {
+  if (gl.getProgramParameter(p, gl.LINK_STATUS)) return;
+  const logs = gl.getAttachedShaders(p)?.map((sh) => gl.getShaderInfoLog(sh)).join("\n");
+  throw new Error(`${gl.getProgramInfoLog(p) ?? "link"}\n${logs ?? ""}`);
 }
 
 export interface HeroOptions {
@@ -33,6 +38,23 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
   const ribbons = packRibbons();
   const liquid = program(gl, liquidFrag(ribbons.total, ribbons.count));
   const composite = program(gl, compositeFrag);
+  const parallel = gl.getExtension("KHR_parallel_shader_compile");
+  const whenCompiled = (start: () => void) => {
+    const poll = () => {
+      const done = !parallel || [liquid, composite].every((p) => gl.getProgramParameter(p, parallel.COMPLETION_STATUS_KHR));
+      if (!done) return void requestAnimationFrame(poll);
+      try {
+        verify(gl, liquid);
+        verify(gl, composite);
+        start();
+      } catch (error) {
+        console.error(error);
+        document.documentElement.classList.add("no-webgl");
+      }
+    };
+    poll();
+  };
+  whenCompiled(() => {
   const vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
 
@@ -60,18 +82,42 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
   gl.uniform1i(C("uLogo"), 1);
   gl.uniform1i(C("uWires"), 2);
 
-  const field = buildLogoField();
+  // El logo empieza invisible (distancia negativa) y aparece cuando el Worker termina su campo.
+  const logoTex = gl.createTexture();
   gl.activeTexture(gl.TEXTURE1);
-  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+  gl.bindTexture(gl.TEXTURE_2D, logoTex);
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.R16F, field.width, field.height, 0, gl.RED, gl.FLOAT, field.data);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.R16F, 1, 1, 0, gl.RED, gl.FLOAT, new Float32Array([-100]));
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.uniform4f(C("uLogoBox"), LOGO.x, LOGO.y, LOGO.w, LOGO.h);
   gl.uniform2f(C("uLogoRefCenter"), LOGO.center[0], LOGO.center[1]);
-  gl.uniform2f(C("uLogoTexel"), 1 / field.width, 1 / field.height);
+  gl.uniform2f(C("uLogoTexel"), 1, 1);
+  let logoReady = false;
+  const uploadField = (field: { data: Float32Array; width: number; height: number }) => {
+    gl.useProgram(composite);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, logoTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.R16F, field.width, field.height, 0, gl.RED, gl.FLOAT, field.data);
+    gl.uniform2f(C("uLogoTexel"), 1 / field.width, 1 / field.height);
+    gl.activeTexture(gl.TEXTURE0);
+    logoReady = true;
+    logoStart = performance.now();
+    if (frozen) requestAnimationFrame(frame);
+  };
+  if (typeof Worker !== "undefined" && typeof OffscreenCanvas !== "undefined") {
+    const worker = new Worker(new URL("./logo.worker.ts", import.meta.url), { type: "module" });
+    worker.onmessage = (e) => {
+      uploadField(e.data);
+      worker.terminate();
+    };
+    worker.onerror = () => setTimeout(() => uploadField(buildLogoField()), 0);
+    worker.postMessage(null);
+  } else {
+    setTimeout(() => uploadField(buildLogoField()), 0);
+  }
 
   gl.activeTexture(gl.TEXTURE2);
   gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
@@ -98,7 +144,7 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
   let panelTop = 0;
   let dprNow = 1;
   const layout = { logoX: 0, logoY: 0, logoScale: 1, wireX: 0, wireY: 0, wireScale: 1 };
-  let maxDpr = 2;
+  let maxDpr = matchMedia("(pointer: coarse)").matches ? 1.5 : 2;
   const resize = () => {
     const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
     canvas.width = Math.round(canvas.clientWidth * dpr);
@@ -124,6 +170,7 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
   resize();
 
   const start = performance.now();
+  let logoStart = start;
   // Si el equipo no llega a unos 40 fps, baja la resolucion una vez en lugar de dar tirones.
   let last = start;
   let shotTaken = false;
@@ -158,7 +205,7 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
     const scroll = window.scrollY;
     const viewH = window.innerHeight;
     const melt = Math.min(1, scroll / (viewH * 0.75));
-    const entrance = frozen ? 0 : Math.pow(1 - Math.min(1, (now - start) / 1800), 3);
+    const entrance = frozen || !logoReady ? (frozen ? 0 : 1) : Math.pow(1 - Math.min(1, Math.max(0, now - logoStart) / 1800), 3);
     panelRect[1] = (panelTop - scroll) * dprNow;
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
@@ -208,8 +255,15 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
       gl.uniform1f(C("uDim"), 0);
       gl.uniform1f(C("uReveal"), 1);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
-      stage.shot = canvas.toDataURL("image/jpeg", 0.82);
-      window.dispatchEvent(new Event(SHOT_EVENT));
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return;
+          stage.shot = URL.createObjectURL(blob);
+          window.dispatchEvent(new Event(SHOT_EVENT));
+        },
+        "image/jpeg",
+        0.82,
+      );
       requestAnimationFrame(frame);
       return;
     }
@@ -224,5 +278,6 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
     if (frozen) requestAnimationFrame(frame);
   }).observe(canvas);
   if (frozen) window.addEventListener("scroll", () => requestAnimationFrame(frame), { passive: true });
+  });
   return gl;
 }

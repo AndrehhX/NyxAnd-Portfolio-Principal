@@ -8,8 +8,9 @@ const title = (small: string, word: string, tail: string, id: string, ink = fals
     <svg class="dtitle__scratch" viewBox="0 0 400 200" preserveAspectRatio="none" aria-hidden="true">
       <path pathLength="1" d="M40 182 L250 18"/><path pathLength="1" d="M118 190 L292 34"/>
     </svg>
-    <span class="dtitle__small dtitle__small--start">${small}</span>
-    <span class="dtitle__row"><span class="dtitle__word">${word}</span><span class="dtitle__semi">;</span><span class="dtitle__small dtitle__small--end">${tail}</span></span>
+    <span class="sr-only">${word}</span>
+    <span class="dtitle__small dtitle__small--start" aria-hidden="true">${small}</span>
+    <span class="dtitle__row" aria-hidden="true"><span class="dtitle__word">${word}</span><span class="dtitle__semi">;</span><span class="dtitle__small dtitle__small--end">${tail}</span></span>
     <svg class="dtitle__swoosh" viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true">
       <path pathLength="1" d="M6 15 C 90 7, 210 3, 300 7 S 380 13, 394 9"/>
     </svg>
@@ -48,6 +49,7 @@ const slide = (s: (typeof slides)[number], i: number) => `
   <li class="slide${s.image ? "" : " slide--type"}" data-index="${i}" aria-label="${s.stamp}">
     ${s.image ? `<img src="${s.image}" alt="" loading="lazy" decoding="async"${s.focus ? ` style="object-position:${s.focus}"` : ""} />` : `<span class="slide__shot"></span><span class="slide__word" aria-hidden="true">${s.stamp}</span>`}
     <span class="slide__stamp" aria-hidden="true"><b>${s.stamp}</b><b>${s.stamp}</b></span>
+    <span class="slide__shade" aria-hidden="true"></span>
   </li>`;
 
 const card = (p: (typeof projects)[number]) => {
@@ -135,7 +137,7 @@ export const sectionsMarkup = `
         <button type="button" data-share aria-label="Compartir perfil">${icons.share}</button>
       </div>
 
-      <div class="carousel" tabindex="0" aria-roledescription="carrusel" aria-label="Momentos y proyectos">
+      <div class="carousel" role="region" tabindex="0" aria-roledescription="carrusel" aria-label="Momentos y proyectos">
         <ul class="carousel__track">${slides.map(slide).join("")}</ul>
         <span class="carousel__quote" aria-hidden="true">${icons.quote}</span>
       </div>

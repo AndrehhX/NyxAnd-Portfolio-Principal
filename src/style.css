@@ -160,7 +160,7 @@ a.ring:hover .ring__art { scale: 1.07; }
   text-transform: uppercase;
 }
 .mark__nav li { width: calc(29.5 * var(--u)); }
-.mark__nav a { color: rgb(255 255 255 / 0.92); transition: color 160ms linear; }
+.mark__nav a { display: inline-block; padding: 7px 0; margin: -7px 0; color: rgb(255 255 255 / 0.92); transition: color 160ms linear; }
 
 /* Menú y búsqueda */
 .menu {

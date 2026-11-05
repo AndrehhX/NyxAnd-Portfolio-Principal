@@ -59,7 +59,7 @@ const warp = (x: number, y: number): P => [
   y + 4.6 * Math.sin(x * 0.047 + 0.8) + 1.6 * Math.sin(x * 0.13 + y * 0.03),
 ];
 
-function drawStroke(g: CanvasRenderingContext2D, stroke: Stroke) {
+function drawStroke(g: Ctx, stroke: Stroke) {
   const { pts, curve } = stroke;
   const STEPS = 48;
   for (let i = 0; i < pts.length - 1; i++) {
@@ -86,10 +86,11 @@ function drawStroke(g: CanvasRenderingContext2D, stroke: Stroke) {
 }
 
 export const LOGO = { x: 222, y: 136, w: 296, h: 126, center: [370, 200] as const };
-const SCALE = 5;
+const SCALE = 4;
+type Ctx = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
 // Recorre el polÃ­gono con esquinas de radio corto: conserva las puntas afiladas del graffiti.
-function outline(g: CanvasRenderingContext2D, pts: readonly P[], radius = 1.9) {
+function outline(g: Ctx, pts: readonly P[], radius = 1.9) {
   const toward = (a: P, b: P): P => {
     const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
     const t = Math.min(radius / len, 0.5);
@@ -153,9 +154,7 @@ function edt(grid: Float64Array, w: number, h: number) {
 export function buildLogoField() {
   const w = LOGO.w * SCALE;
   const h = LOGO.h * SCALE;
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
+  const canvas = new OffscreenCanvas(w, h);
   const g = canvas.getContext("2d", { willReadFrequently: true })!;
   g.scale(SCALE, SCALE);
   g.translate(-LOGO.x, -LOGO.y);
@@ -196,7 +195,7 @@ export function buildLogoField() {
 
   // Un desenfoque corto redondea esquinas y deja normales limpias en el bisel.
   const data = new Float32Array(w * h);
-  const R = 3;
+  const R = 2;
   const tmp = new Float32Array(w * h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {

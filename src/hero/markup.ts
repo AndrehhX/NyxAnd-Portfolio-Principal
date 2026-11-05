@@ -68,7 +68,7 @@ export const heroMarkup = `
           <p class="ring__title" data-clock>--:--</p>
           <p class="ring__detail">Guatemala</p>
         </div>
-        <a class="ring" href="#proyectos" aria-label="Ver los ${projects.length} proyectos">
+        <a class="ring" href="#proyectos">
           <svg class="ring__art" viewBox="0 0 100 100" aria-hidden="true">
             <circle cx="50" cy="50" r="48.5" pathLength="100" class="ring__dim"/>
             <circle cx="50" cy="50" r="48.5" pathLength="100" class="ring__arc" data-scroll-arc stroke-dasharray="0 100"/>

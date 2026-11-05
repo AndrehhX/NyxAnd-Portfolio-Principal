@@ -35,11 +35,12 @@ export function setupAbout(root: HTMLElement, reduced: boolean) {
         scale: offset === 0 ? 1 : 0.8,
         rotate: offset * 2.5,
         autoAlpha: near ? 1 : 0,
-        filter: offset === 0 ? "brightness(1)" : "brightness(0.55)",
         zIndex: 10 - Math.abs(offset),
         duration: instant ? 0 : 0.95,
         ease: "expo.out",
       });
+      // Oscurecer con una capa encima es más barato que animar un filtro.
+      gsap.to(slide.querySelector(".slide__shade"), { opacity: offset === 0 ? 0 : 0.45, duration: instant ? 0 : 0.95, ease: "expo.out" });
       slide.setAttribute("aria-hidden", String(offset !== 0));
     });
     gsap.fromTo(caption, { autoAlpha: 0, y: 8 }, { autoAlpha: 1, y: 0, duration: instant ? 0 : 0.6, onStart: () => void (caption.textContent = data[index].caption) });
@@ -67,6 +68,20 @@ export function setupAbout(root: HTMLElement, reduced: boolean) {
     render();
   });
   new IntersectionObserver(([entry]) => (visible = entry.isIntersecting), { threshold: 0.25 }).observe(carousel);
+
+  // Decodifica las fotos con dos pantallas de anticipación para que no den tirones al aparecer.
+  const warm = new IntersectionObserver(
+    ([entry]) => {
+      if (!entry.isIntersecting) return;
+      warm.disconnect();
+      card.querySelectorAll<HTMLImageElement>(".slide img").forEach((img) => {
+        img.loading = "eager";
+        img.decode().catch(() => {});
+      });
+    },
+    { rootMargin: "200% 0px" },
+  );
+  warm.observe(card);
 
   const setPlaying = (value: boolean) => {
     playing = value;
