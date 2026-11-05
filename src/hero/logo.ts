@@ -1,5 +1,5 @@
-// Logo graffiti trazado a mano sobre la referencia, en coordenadas 736 x 414.
-// Se rasteriza a un campo de distancia: el shader saca de ahí el bisel, el grosor y la refracción.
+﻿// Logo graffiti trazado a mano sobre la referencia, en coordenadas 736 x 414.
+// Se rasteriza a un campo de distancia: el shader saca de ahÃ­ el bisel, el grosor y la refracciÃ³n.
 type P = readonly [number, number];
 
 const SHAPES: readonly (readonly P[])[] = [
@@ -61,13 +61,21 @@ const HOLES: readonly (readonly [number, number, number])[] = [
 export const LOGO = { x: 245, y: 148, w: 240, h: 106, center: [365, 200] as const };
 const SCALE = 5;
 
-function outline(g: CanvasRenderingContext2D, pts: readonly P[]) {
-  const mid = (a: P, b: P): P => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-  const start = mid(pts[pts.length - 1], pts[0]);
-  g.moveTo(start[0], start[1]);
+// Recorre el polÃ­gono con esquinas de radio corto: conserva las puntas afiladas del graffiti.
+function outline(g: CanvasRenderingContext2D, pts: readonly P[], radius = 1.9) {
+  const toward = (a: P, b: P): P => {
+    const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    const t = Math.min(radius / len, 0.5);
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  };
   pts.forEach((p, i) => {
-    const m = mid(p, pts[(i + 1) % pts.length]);
-    g.quadraticCurveTo(p[0], p[1], m[0], m[1]);
+    const prev = pts[(i + pts.length - 1) % pts.length];
+    const next = pts[(i + 1) % pts.length];
+    const a = toward(p, prev);
+    const b = toward(p, next);
+    if (i === 0) g.moveTo(a[0], a[1]);
+    else g.lineTo(a[0], a[1]);
+    g.quadraticCurveTo(p[0], p[1], b[0], b[1]);
   });
   g.closePath();
 }

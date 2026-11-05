@@ -161,19 +161,19 @@ void main() {
       // Reflejo largo del liquido sobre la cara del cristal.
       float sheen = textureLod(uLiquid, vec2(vUv.x * 1.6 - 0.28, vUv.y * 0.55 + 0.22), 2.6).r;
       float streak = 0.5 + 0.5 * sin(lp.x * 0.19 + lp.y * 0.05 + 1.1);
-      vec3 face = bg * mix(0.86, 1.07, bright);
-      face += vec3(0.205, 0.2, 0.19) * (1.0 - bright) * (0.62 + 0.38 * streak);
+      vec3 face = bg * mix(0.8, 1.12, bright);
+      face += vec3(0.17, 0.165, 0.158) * (1.0 - bright) * (0.5 + 0.5 * streak);
       face += ramp(sheen) * 0.16 * (1.0 - bright);
 
       float facing = dot(g2 * -1.0, uLight);
-      float lightOn = smoothstep(-0.55, 0.75, facing);
-      float rim = exp(-pow((d - 0.72) / 0.36, 2.0));
-      float edge = exp(-pow((d - 0.12) / 0.2, 2.0));
+      float lightOn = smoothstep(-0.35, 0.7, facing);
+      float rim = exp(-pow((d - 0.82) / 0.46, 2.0));
+      float edge = exp(-pow((d - 0.14) / 0.24, 2.0));
       vec3 rimCol = mix(vec3(0.97, 0.95, 0.89), vec3(0.17, 0.135, 0.09), bright);
-      float rimAmt = mix(0.26 + 0.74 * lightOn, 0.94, bright);
+      float rimAmt = mix(0.34 + 0.66 * lightOn, 0.98, bright);
       vec3 c = mix(face, rimCol, rim * rimAmt);
       // Sobre crema, las aristas que miran a la luz recuperan un filo blanco.
-      c = mix(c, vec3(1.0, 0.98, 0.92), bright * smoothstep(0.55, 1.0, facing) * exp(-pow((d - 1.15) / 0.3, 2.0)) * 0.85);
+      c = mix(c, vec3(1.0, 0.98, 0.92), bright * smoothstep(0.55, 1.0, facing) * exp(-pow((d - 1.45) / 0.32, 2.0)) * 0.9);
       c = mix(c, vec3(0.03), edge * mix(0.62, 0.3, bright));
       col = mix(col, c, cover);
     }
