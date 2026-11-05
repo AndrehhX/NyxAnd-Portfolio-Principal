@@ -1,20 +1,97 @@
-// Todos los textos del hero viven aquí para poder cambiarlos sin tocar la maqueta.
+// Todo el texto del sitio vive aquí. Solo datos reales del CV y de los repositorios públicos.
+export const links = {
+  github: "https://github.com/AndrehhX",
+  email: "andrehcallex@gmail.com",
+  cv: "/cv-andreh-callejas.pdf",
+} as const;
+
 export const content = {
-  brand: "Form.",
+  brand: "NyxAnd.",
   logoAlt: "Andreh",
-  edition: "nyxand edition",
-  cost: "cost",
-  topNav: ["Contact", "Menu", "Settings", "Profile"],
-  topRight: "Fleurs",
-  profile: "Profile",
-  sideLeft: ["Go", "Recop"],
-  sideRight: ["Andreh", "#303"],
-  rings: [
-    { title: "Fleurs", detail: "230378" },
-    { title: "NyxAnd", detail: "#675" },
+  role: "ingeniería en ciencias de la computación",
+  year: "2026",
+  sections: [
+    { id: "proyectos", label: "Proyectos" },
+    { id: "experiencia", label: "Experiencia" },
+    { id: "sobre-mi", label: "Sobre mí" },
+    { id: "contacto", label: "Contacto" },
   ],
   mark: "NyxAnd",
-  markNav: ["Home", "Image", "View", "Cost"],
-  footer: ["Andreh", "Profile"],
-  counter: "68",
+} as const;
+
+export interface Project {
+  name: string;
+  kind: string;
+  summary: string;
+  stack: readonly string[];
+  code?: string;
+  demo?: string;
+  status?: string;
+}
+
+export const projects: readonly Project[] = [
+  {
+    name: "Orunei",
+    kind: "Plataforma social de anime",
+    summary: "Descubre anime, organiza tu AnimeList y comparte una identidad visual, con catálogo en vivo, recomendaciones y perfiles privados.",
+    stack: ["React", "Supabase", "AniList"],
+    code: "https://github.com/AndrehhX/orunei",
+    demo: "https://orunei.fun",
+  },
+  {
+    name: "Kaze",
+    kind: "Ecosistema multimedia",
+    summary: "Streaming adaptativo HLS para AniList, Watch Parties sincronizadas en tiempo real y app nativa para Android.",
+    stack: ["Next.js", "TypeScript", "Supabase", "Kotlin"],
+    code: "https://github.com/AndrehhX/Kaze",
+    demo: "https://orunei-v2.vercel.app",
+  },
+  {
+    name: "Aevora",
+    kind: "Launcher de escritorio",
+    summary: "Una sola biblioteca nativa y ligera para Steam, Epic Games y GOG. Estoy reconstruyéndolo desde cero.",
+    stack: ["Tauri", "Rust", "React"],
+    status: "En desarrollo",
+  },
+  {
+    name: "Mono Motion",
+    kind: "Experimento editorial",
+    summary: "Tipografía, composición y transiciones interactivas para practicar el control del movimiento en una interfaz.",
+    stack: ["React", "TypeScript", "GSAP"],
+    code: "https://github.com/AndrehhX/mono-motion",
+  },
+  {
+    name: "Student Organizer",
+    kind: "Proyecto académico en grupo",
+    summary: "Organiza estudiantes, calificaciones, tareas y promedios desde una base web funcional.",
+    stack: ["Java", "HTML y CSS", "JavaScript"],
+    code: "https://github.com/AndrehhX/Student-Organizer-Web",
+  },
+];
+
+export const experience = [
+  {
+    role: "Asistente de Soporte CRM",
+    place: "Universidad del Valle de Guatemala",
+    period: "2026, actualidad",
+    detail: "Pruebas funcionales en plataformas CRM, reporte de incidencias y apoyo en la integración de instituciones afiliadas.",
+  },
+  {
+    role: "Asistente de Gestión de Datos",
+    place: "Departamento de Educación Guatemala Occidente",
+    period: "Septiembre a noviembre de 2025",
+    detail: "Inventarios tecnológicos, reportes de seguimiento y verificación de facturas, pagos y registros mediante SICOIN.",
+  },
+  {
+    role: "Segundo lugar, Hackathon UVG 2026",
+    place: "Universidad del Valle de Guatemala",
+    period: "Abril de 2026",
+    detail: "Desarrollo de una solución tecnológica en competencia.",
+  },
+] as const;
+
+export const about = {
+  lead: "Soy estudiante de Ingeniería en Ciencias de la Computación en la UVG. Me interesa entender cómo funcionan las herramientas y convertir necesidades concretas en soluciones claras.",
+  body: "Me gusta que las cosas se entiendan. Por eso combino lógica, composición visual y pruebas pequeñas antes de dar algo por terminado.",
+  skills: ["Python", "TypeScript", "React", "Node.js", "HTML y CSS", "Linux", "Git", "IA y automatización"],
 } as const;

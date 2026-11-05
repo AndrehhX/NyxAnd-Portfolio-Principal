@@ -1,4 +1,5 @@
 import "./style.css";
+import { setupInteractions } from "./hero/interactions";
 import { heroMarkup } from "./hero/markup";
 import { createHero } from "./hero/renderer";
 
@@ -13,3 +14,4 @@ const hero = createHero({
   frozen: params.has("freeze") || reduced,
 });
 if (!hero) document.documentElement.classList.add("no-webgl");
+setupInteractions(app, reduced);
