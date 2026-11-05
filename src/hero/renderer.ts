@@ -95,8 +95,9 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
 
   let panelRect = new Float32Array(4);
   const layout = { logoX: 0, logoY: 0, logoScale: 1, wireX: 0, wireY: 0, wireScale: 1 };
+  let maxDpr = 2;
   const resize = () => {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
     canvas.width = Math.round(canvas.clientWidth * dpr);
     canvas.height = Math.round(canvas.clientHeight * dpr);
     const r = panel.getBoundingClientRect();
@@ -116,8 +117,26 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
   resize();
 
   const start = performance.now();
+  // Si el equipo no llega a unos 40 fps, baja la resolucion una vez en lugar de dar tirones.
+  let last = start;
+  let slowFrames = 0;
+  let sampled = 0;
   const frame = (now: number) => {
     const t = frozen ? 0 : (now - start) / 1000;
+    const delta = now - last;
+    last = now;
+    if (maxDpr > 1 && delta < 250) {
+      sampled++;
+      if (delta > 25) slowFrames++;
+      if (sampled === 90) {
+        if (slowFrames > 45) {
+          maxDpr = 1;
+          resize();
+        }
+        sampled = 0;
+        slowFrames = 0;
+      }
+    }
     pointer.x += (pointer.tx - pointer.x) * 0.06;
     pointer.y += (pointer.ty - pointer.y) * 0.06;
     pointer.force += ((frozen ? 0 : pointer.tf) - pointer.force) * 0.04;

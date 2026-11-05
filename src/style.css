@@ -162,7 +162,7 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
   .panel { left: auto; right: 0; top: 64px; }
   .profile { left: auto; right: 18px; top: 42%; transform: none; }
   .cost { display: none; }
-  .edition { left: 50%; top: 61%; }
+  .edition { left: 50%; top: 58.5%; }
   .mark { left: 18px; top: auto; bottom: 28px; }
   .counter { left: auto; right: 18px; top: auto; bottom: 28px; transform: none; }
   .mark__nav { gap: 18px; }

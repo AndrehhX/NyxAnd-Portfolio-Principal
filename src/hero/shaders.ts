@@ -1,4 +1,4 @@
-export const VERT = /* glsl */ `#version 300 es
+﻿export const VERT = /* glsl */ `#version 300 es
 out vec2 vUv;
 void main() {
   vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2);
@@ -27,9 +27,10 @@ vec2 flow(vec2 p, float t) {
 
 void main() {
   vec2 p = vec2(vUv.x, 1.0 - vUv.y) * STAGE;
-  // La deformación vale cero en t = 0: el primer fotograma es la composición de referencia.
-  vec2 q = p + flow(p, uTime) - flow(p, 0.0);
-  q += flow(q * 1.35 + 40.0, uTime * 0.8) * 0.35 - flow(q * 1.35 + 40.0, 0.0) * 0.35;
+  // La deformaciÃ³n vale cero en t = 0: el primer fotograma es la composiciÃ³n de referencia.
+  float slow = uTime * 0.55;
+  vec2 q = p + flow(p, slow) - flow(p, 0.0);
+  q += flow(q * 1.35 + 40.0, slow * 0.8) * 0.35 - flow(q * 1.35 + 40.0, 0.0) * 0.35;
 
   vec2 toPointer = p - uPointer;
   q += toPointer * exp(-dot(toPointer, toPointer) / 5200.0) * uPointerForce;
@@ -49,7 +50,7 @@ void main() {
       float w = mix(a.z, b.z, h) * breathe * 1.16;
       float amp = mix(a.w, b.w, h);
       float d2 = dot(c, c) / (w * w);
-      // Núcleo denso, caída suave y un halo ancho de humo alrededor.
+      // NÃºcleo denso, caÃ­da suave y un halo ancho de humo alrededor.
       float core = exp(-d2 * 0.62);
       float halo = exp(-d2 * 0.1) * 0.15;
       best = max(best, amp * max(core, halo));
