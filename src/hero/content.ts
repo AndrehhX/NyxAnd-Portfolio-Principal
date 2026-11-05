@@ -1,4 +1,4 @@
-// Todo el texto del sitio vive aquí. Solo datos reales del CV y de los repositorios públicos.
+﻿// Todo el texto del sitio vive aquí. Solo datos reales del CV y de los repositorios públicos.
 export const links = {
   github: "https://github.com/AndrehhX",
   email: "andrehcallex@gmail.com",
@@ -112,7 +112,7 @@ export const slides: readonly Slide[] = [
   { stamp: "UVG", image: "/media/laboratorio.jpg", focus: "50% 55%", caption: "En el laboratorio. Estudio Ingeniería en Ciencias de la Computación en la UVG desde enero de 2026." },
   { stamp: "Hackathon", caption: "Segundo lugar en el Hackathon UVG 2026, en abril." },
   { stamp: "Orunei", image: "/media/orunei.jpg", caption: "Orunei: una plataforma social para descubrir anime y organizar tu AnimeList." },
-  { stamp: "IA", caption: "Certificación Vibe Coding con IA de Big School, en marzo de 2026." },
+  { stamp: "Procesos", caption: "Procesos de automatización con IA." },
   { stamp: "Café", image: "/media/cafe.jpg", focus: "50% 60%", caption: "Una pausa con café entre proyectos." },
 ];
 
