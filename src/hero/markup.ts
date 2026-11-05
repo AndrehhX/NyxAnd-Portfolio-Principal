@@ -51,7 +51,7 @@ export const heroMarkup = `
 
     <h1 class="wordmark">
       <span class="sr-only">${c.logoAlt}</span>
-      <span class="edition at" style="--x:366.8;--y:245">${c.edition}</span>
+      <span class="edition at" style="--x:366.8;--y:249">${c.edition}</span>
     </h1>
     <p class="cost at" style="--x:466;--y:165.5">${c.cost}</p>
 
