@@ -40,7 +40,7 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
 .hero { position: relative; width: 100%; height: 100vh; height: 100dvh; min-height: 320px; overflow: hidden; }
 
 /* Entrada: la interfaz aparece mientras el logo se recompone. */
-.hero .at, .hero .mark, .hero .topnav li, .hero .ring { animation: appear 900ms 700ms both; }
+.hero .at, .hero .mark, .hero .topnav li, .hero .ring { animation: appear 900ms 700ms backwards; }
 @keyframes appear { from { opacity: 0; } to { opacity: 1; } }
 
 /* Colocación: centra cada elemento en un punto de la composición. */
@@ -162,76 +162,6 @@ a.ring:hover .ring__art { scale: 1.07; }
 .mark__nav li { width: calc(29.5 * var(--u)); }
 .mark__nav a { color: rgb(255 255 255 / 0.92); transition: color 160ms linear; }
 
-/* Secciones del portafolio */
-.block { padding: clamp(72px, 13vh, 150px) var(--gutter) 0; }
-.block__title {
-  font-family: var(--wide);
-  font-size: clamp(14px, 1.35vw, 20px);
-  font-stretch: 118%;
-  font-weight: 300;
-  color: var(--ink-soft);
-  margin-bottom: clamp(24px, 4vh, 44px);
-}
-.block--split { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(0, 2.6fr); gap: 24px clamp(24px, 4vw, 64px); }
-
-.project {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(250px, 30vw, 430px);
-  gap: 16px clamp(24px, 4vw, 64px);
-  align-items: end;
-  padding: clamp(18px, 3vh, 30px) 0;
-  border-top: 1px solid var(--line);
-}
-.project:last-child { border-bottom: 1px solid var(--line); }
-.project__name {
-  font-size: clamp(46px, 8.4vw, 148px);
-  font-weight: 460;
-  line-height: 0.94;
-  letter-spacing: -0.075em;
-  color: #fff;
-  transition: opacity 220ms linear, translate 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.projects:hover .project:not(:hover) .project__name { opacity: 0.3; }
-.project:hover .project__name { translate: clamp(8px, 1.2vw, 20px) 0; }
-.project__kind { font-weight: 500; font-size: 15px; }
-.project__summary { margin-top: 6px; font-size: 15px; line-height: 1.42; color: rgb(243 238 226 / 0.84); }
-.project__stack { margin-top: 10px; font-size: 13px; color: var(--ink-soft); }
-.project__links { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; }
-.project__links a, .contact__links a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-.project__links a:hover, .contact__links a:hover { color: #fff; text-decoration-thickness: 2px; }
-.project__links span { color: var(--ink-soft); }
-
-.timeline li { padding: 0 0 clamp(24px, 4vh, 40px); }
-.timeline__period { font-size: 14px; color: var(--ink-soft); }
-.timeline__role { margin-top: 4px; font-size: clamp(24px, 3vw, 44px); font-weight: 460; line-height: 1.06; letter-spacing: -0.03em; }
-.timeline__place { margin-top: 6px; font-size: 16px; }
-.timeline__detail { margin-top: 6px; max-width: 62ch; font-size: 15px; line-height: 1.45; color: rgb(243 238 226 / 0.84); }
-
-.about__lead { max-width: 34ch; font-size: clamp(24px, 3vw, 44px); font-weight: 400; line-height: 1.1; letter-spacing: -0.028em; }
-.about__body { margin-top: 20px; max-width: 58ch; font-size: 16px; line-height: 1.45; color: rgb(243 238 226 / 0.84); }
-.about__skills { margin-top: 16px; max-width: 58ch; font-size: 14px; line-height: 1.5; color: var(--ink-soft); }
-
-.contact { padding-bottom: clamp(32px, 6vh, 56px); }
-.contact__mail {
-  display: block;
-  font-size: clamp(25px, 6.6vw, 112px);
-  font-weight: 460;
-  line-height: 1;
-  letter-spacing: -0.06em;
-  color: #fff;
-  overflow-wrap: anywhere;
-  text-decoration: underline transparent 2px;
-  text-underline-offset: 0.12em;
-  transition: text-decoration-color 200ms linear;
-}
-.contact__mail:hover { text-decoration-color: currentColor; }
-.contact__links { margin-top: 24px; display: flex; gap: 22px; font-size: 16px; }
-.contact__foot { margin-top: clamp(48px, 10vh, 96px); font-size: 13px; color: var(--ink-soft); }
-
-/* Las filas se descubren con una cortina al entrar en pantalla. */
-.will-reveal { clip-path: inset(0 0 100% 0); }
-.will-reveal.is-in { clip-path: inset(0 0 -18% 0); transition: clip-path 800ms cubic-bezier(0.2, 0.8, 0.2, 1); }
-
 /* Menú y búsqueda */
 .menu {
   position: fixed;
@@ -262,8 +192,6 @@ a.ring:hover .ring__art { scale: 1.07; }
 
 /* Pantallas angostas */
 @media (max-width: 760px) {
-  .block--split { grid-template-columns: 1fr; }
-  .project { grid-template-columns: 1fr; align-items: start; }
   :root { --gutter: 18px; }
 }
 

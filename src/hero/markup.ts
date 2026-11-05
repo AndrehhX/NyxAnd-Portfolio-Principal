@@ -1,4 +1,5 @@
-import { about, content as c, experience, links, projects } from "./content";
+import { sectionsMarkup } from "../site/sections";
+import { content as c, links, projects } from "./content";
 
 const icon = (path: string) =>
   `<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">${path}</svg>`;
@@ -14,21 +15,6 @@ const icons = {
 const external = 'target="_blank" rel="noopener noreferrer"';
 const sectionLinks = c.sections.map((s) => `<li><a href="#${s.id}">${s.label}</a></li>`).join("");
 
-const projectRow = (p: (typeof projects)[number]) => `
-  <li class="project">
-    <h3 class="project__name">${p.name}</h3>
-    <div class="project__info">
-      <p class="project__kind">${p.kind}</p>
-      <p class="project__summary">${p.summary}</p>
-      <p class="project__stack">${p.stack.join(", ")}</p>
-      <p class="project__links">
-        ${p.demo ? `<a href="${p.demo}" ${external}>Abrir demo</a>` : ""}
-        ${p.code ? `<a href="${p.code}" ${external}>Ver código</a>` : ""}
-        ${p.status ? `<span>${p.status}</span>` : ""}
-      </p>
-    </div>
-  </li>`;
-
 // Destinos que aparecen en el menú y en la búsqueda.
 const destinations = [
   ...c.sections.map((s) => ({ label: s.label, hint: "Sección", href: `#${s.id}`, ext: false })),
@@ -39,6 +25,8 @@ const destinations = [
 
 export const heroMarkup = `
   <canvas class="stage" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="cursor" aria-hidden="true"><span class="cursor__label"></span></div>
   <div class="stage-fallback" aria-hidden="true"></div>
 
   <main>
@@ -108,45 +96,7 @@ export const heroMarkup = `
       </footer>
     </section>
 
-    <section class="block" id="proyectos" aria-labelledby="t-proyectos">
-      <h2 class="block__title" id="t-proyectos">Proyectos</h2>
-      <ul class="projects">${projects.map(projectRow).join("")}</ul>
-    </section>
-
-    <section class="block block--split" id="experiencia" aria-labelledby="t-experiencia">
-      <h2 class="block__title" id="t-experiencia">Experiencia</h2>
-      <ul class="timeline">
-        ${experience
-          .map(
-            (e) => `<li>
-              <p class="timeline__period">${e.period}</p>
-              <h3 class="timeline__role">${e.role}</h3>
-              <p class="timeline__place">${e.place}</p>
-              <p class="timeline__detail">${e.detail}</p>
-            </li>`,
-          )
-          .join("")}
-      </ul>
-    </section>
-
-    <section class="block block--split" id="sobre-mi" aria-labelledby="t-sobre">
-      <h2 class="block__title" id="t-sobre">Sobre mí</h2>
-      <div class="about">
-        <p class="about__lead">${about.lead}</p>
-        <p class="about__body">${about.body}</p>
-        <p class="about__skills">${about.skills.join(", ")}</p>
-      </div>
-    </section>
-
-    <section class="block contact" id="contacto" aria-labelledby="t-contacto">
-      <h2 class="block__title" id="t-contacto">Hablemos</h2>
-      <a class="contact__mail" href="mailto:${links.email}">${links.email}</a>
-      <p class="contact__links">
-        <a href="${links.github}" ${external}>GitHub</a>
-        <a href="${links.cv}" ${external}>Currículum</a>
-      </p>
-      <p class="contact__foot">NyxAnd, Dereck Andreh Callejas Ajin, Guatemala, ${c.year}.</p>
-    </section>
+    ${sectionsMarkup}
   </main>
 
   <dialog class="menu" aria-label="Menú y búsqueda">

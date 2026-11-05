@@ -1,5 +1,5 @@
 // Comportamiento de la interfaz: menú con búsqueda, reloj de Guatemala y progreso de scroll.
-export function setupInteractions(root: HTMLElement, reduced: boolean) {
+export function setupInteractions(root: HTMLElement) {
   const menu = root.querySelector<HTMLDialogElement>(".menu")!;
   const input = menu.querySelector<HTMLInputElement>("input")!;
   const items = [...menu.querySelectorAll<HTMLLIElement>("li")];
@@ -52,23 +52,4 @@ export function setupInteractions(root: HTMLElement, reduced: boolean) {
   addEventListener("scroll", onScroll, { passive: true });
   addEventListener("resize", onScroll);
   onScroll();
-
-  // Las filas aparecen al entrar en pantalla, una sola vez.
-  if (!reduced && "IntersectionObserver" in window) {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-in");
-            observer.unobserve(entry.target);
-          }
-        }
-      },
-      { rootMargin: "0px 0px -8% 0px" },
-    );
-    root.querySelectorAll(".project, .timeline li, .about, .contact__mail").forEach((el) => {
-      el.classList.add("will-reveal");
-      observer.observe(el);
-    });
-  }
 }

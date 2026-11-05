@@ -95,3 +95,32 @@ export const about = {
   body: "Me gusta que las cosas se entiendan. Por eso combino lógica, composición visual y pruebas pequeñas antes de dar algo por terminado.",
   skills: ["Python", "TypeScript", "React", "Node.js", "HTML y CSS", "Linux", "Git", "IA y automatización"],
 } as const;
+
+export interface Slide {
+  stamp: string;
+  caption: string;
+  image?: string;
+}
+
+// Diapositivas del perfil: solo hechos reales.
+export const slides: readonly Slide[] = [
+  { stamp: "Orunei", image: "/media/orunei.jpg", caption: "Orunei: una plataforma social para descubrir anime y organizar tu AnimeList." },
+  { stamp: "Hackathon", caption: "Segundo lugar en el Hackathon UVG 2026, en abril." },
+  { stamp: "Kaze", image: "/media/kaze.jpg", caption: "Kaze: streaming HLS y Watch Parties sincronizadas en tiempo real." },
+  { stamp: "UVG", caption: "Estudio Ingeniería en Ciencias de la Computación en la UVG desde enero de 2026." },
+  { stamp: "IA", caption: "Certificación Vibe Coding con IA de Big School, en marzo de 2026." },
+];
+
+export const highlights = [
+  { short: "Py", name: "python" },
+  { short: "Ts", name: "typescript" },
+  { short: "Re", name: "react" },
+  { short: "No", name: "node.js" },
+  { short: "Lx", name: "linux" },
+  { short: "Git", name: "git" },
+] as const;
+
+export const projectImages: Record<string, string> = {
+  Orunei: "/media/orunei.jpg",
+  Kaze: "/media/kaze.jpg",
+};

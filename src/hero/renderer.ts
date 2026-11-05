@@ -1,6 +1,7 @@
 import { LOGO, buildLogoField } from "./logo";
 import { packRibbons } from "./liquid";
 import { VERT, compositeFrag, liquidFrag } from "./shaders";
+import { SHOT_EVENT, stage } from "./state";
 import { WIRES, buildWireCanvas } from "./wires";
 
 function program(gl: WebGL2RenderingContext, fs: string) {
@@ -125,6 +126,8 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
   const start = performance.now();
   // Si el equipo no llega a unos 40 fps, baja la resolucion una vez en lugar de dar tirones.
   let last = start;
+  let shotTaken = false;
+  let glow = 0;
   let slowFrames = 0;
   let sampled = 0;
   const frame = (now: number) => {
@@ -192,7 +195,24 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
     gl.uniform1f(C("uHover"), pointer.hover);
     gl.uniform1f(C("uDeform"), entrance + melt * 0.3);
     gl.uniform1f(C("uMelt"), melt);
-    gl.uniform1f(C("uDim"), Math.min(1, scroll / (viewH * 0.8)) * 0.74);
+    glow += (stage.glow - glow) * 0.08;
+    const baseDim = stage.dimOverride ?? Math.min(1, scroll / (viewH * 0.8)) * 0.74;
+    gl.uniform1f(C("uDim"), Math.max(0, baseDim - glow * 0.42));
+
+    // Una sola vez: fotografía el líquido sin logo, alambres ni panel para usarlo en las tarjetas.
+    if (!shotTaken && (frozen || now - start > 1700)) {
+      shotTaken = true;
+      gl.uniform2f(C("uLogoCenter"), -1e5, -1e5);
+      gl.uniform2f(C("uWireOrigin"), -1e5, -1e5);
+      gl.uniform4f(C("uPanel"), -10, -10, 0, 0);
+      gl.uniform1f(C("uDim"), 0);
+      gl.uniform1f(C("uReveal"), 1);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      stage.shot = canvas.toDataURL("image/jpeg", 0.82);
+      window.dispatchEvent(new Event(SHOT_EVENT));
+      requestAnimationFrame(frame);
+      return;
+    }
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 
     if (!frozen) requestAnimationFrame(frame);
