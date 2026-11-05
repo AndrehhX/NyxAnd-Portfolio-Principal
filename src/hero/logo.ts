@@ -8,38 +8,55 @@ interface Stroke {
   curve?: boolean;
 }
 
-// "Andreh" construido con trazos de grosor variable, como un tag hecho a pulso.
+// "Andreh" como tag: alturas desiguales, diagonales fuertes, grosores extremos y puntas que escapan.
 const STROKES: readonly Stroke[] = [
-  // A: dos piernas, travesaño y cola
-  { pts: [[291, 160, 9], [272, 204, 13], [259, 238, 9], [250, 248, 0]] },
-  { pts: [[291, 160, 9], [297, 198, 13], [303, 231, 13], [313, 238, 0]] },
-  { pts: [[245, 231, 0], [270, 219, 8], [300, 214, 8], [316, 205, 0]] },
-  // n
-  { pts: [[318, 182, 9], [315, 210, 12], [312, 232, 13], [303, 238, 0]] },
-  { pts: [[317, 197, 9], [327, 184, 11], [339, 187, 11], [338, 212, 12], [336, 232, 13], [345, 238, 0]] },
+  // A: flecha inclinada con cola
+  { pts: [[292, 153, 8], [272, 190, 12], [252, 226, 17], [240, 247, 0]] },
+  { pts: [[292, 153, 8], [294, 196, 10], [300, 232, 15], [314, 246, 0]] },
+  { pts: [[232, 214, 0], [262, 210, 9], [296, 204, 10], [316, 192, 0]] },
+  // n: zigzag con una espina que sube hasta arriba
+  { pts: [[318, 176, 8], [314, 205, 12], [309, 236, 16], [299, 248, 0]] },
+  { pts: [[318, 180, 9], [331, 208, 11], [343, 235, 14]] },
+  { pts: [[343, 236, 14], [350, 195, 11], [362, 150, 0]] },
   // d
-  { pts: [[373, 158, 9], [367, 200, 12], [363, 231, 13], [373, 238, 0]] },
-  { pts: [[366, 196, 8], [352, 188, 10], [344, 202, 11], [344, 222, 11], [352, 233, 10], [364, 224, 8]], curve: true },
-  // r
-  { pts: [[386, 183, 9], [383, 210, 12], [380, 232, 13], [371, 238, 0]] },
-  { pts: [[385, 202, 9], [393, 189, 10], [404, 184, 8], [414, 187, 0]] },
+  { pts: [[396, 154, 8], [388, 196, 11], [381, 232, 15], [391, 247, 0]] },
+  { pts: [[386, 192, 7], [370, 190, 11], [357, 205, 14], [354, 224, 14], [364, 236, 12], [380, 226, 8]], curve: true },
+  // r: bandera larga que vuela sobre la e
+  { pts: [[409, 180, 8], [404, 208, 12], [399, 236, 15], [389, 248, 0]] },
+  { pts: [[405, 208, 7], [413, 190, 11], [424, 178, 9], [442, 168, 0]] },
   // e
-  { pts: [[405, 214, 7], [424, 206, 8], [428, 193, 10], [416, 183, 11], [405, 194, 12], [402, 214, 12], [409, 232, 11], [423, 232, 8], [434, 222, 0]], curve: true },
+  { pts: [[428, 222, 6], [446, 211, 7], [449, 200, 9], [440, 194, 10], [427, 204, 12], [422, 220, 13], [430, 235, 11], [442, 236, 8], [456, 227, 0]], curve: true },
   // h
-  { pts: [[443, 158, 9], [437, 200, 12], [432, 232, 13], [423, 238, 0]] },
-  { pts: [[438, 203, 9], [447, 189, 11], [458, 192, 11], [456, 214, 12], [454, 232, 13], [463, 238, 0]] },
+  { pts: [[474, 152, 8], [465, 195, 11], [456, 234, 15], [446, 248, 0]] },
+  { pts: [[466, 202, 8], [476, 186, 12], [488, 190, 12], [485, 214, 13], [480, 234, 15], [493, 247, 0]] },
+];
+
+// Cortes finos que dibujan contornos dentro de los trazos gruesos.
+const CUTS: readonly Stroke[] = [
+  { pts: [[258, 238, 0], [266, 214, 1.5], [278, 193, 0]] },
+  { pts: [[304, 243, 0], [298, 222, 1.4], [296, 208, 0]] },
+  { pts: [[314, 244, 0], [319, 218, 1.4], [323, 196, 0]] },
+  { pts: [[347, 228, 0], [352, 200, 1.3], [358, 172, 0]] },
+  { pts: [[387, 241, 0], [391, 212, 1.4], [396, 180, 0]] },
+  { pts: [[461, 240, 0], [466, 212, 1.4], [472, 176, 0]] },
 ];
 
 // Punto final del logo
-const DOT: readonly P[] = [[463, 217], [465, 215.5], [470, 217.5], [477, 223], [477, 225], [473, 228], [467, 228], [463, 225], [463, 221]];
+const DOT: readonly P[] = [[496, 218], [498, 216.5], [503, 218.5], [510, 224], [510, 226], [506, 229], [500, 229], [496, 226], [496, 222]];
 
 // Anillas: [x, y, radio del agujero]. Cada una lleva su lóbulo alrededor.
 const HOLES: readonly (readonly [number, number, number])[] = [
-  [291, 160.5, 2.2],
-  [318.2, 181.5, 2],
-  [373.2, 158.5, 2.2],
-  [386.2, 182.5, 2],
-  [443.2, 158.5, 2.2],
+  [292, 153.5, 2.2],
+  [318.2, 176.5, 2],
+  [396.2, 154.5, 2.2],
+  [409.2, 180.5, 2],
+  [474.2, 152.5, 2.2],
+];
+
+// Deformación fija: nada queda sobre una línea recta, como un trazo hecho a pulso.
+const warp = (x: number, y: number): P => [
+  x + 3.4 * Math.sin(y * 0.071 + x * 0.031) + 1.4 * Math.sin(y * 0.19 + 1.1),
+  y + 4.6 * Math.sin(x * 0.047 + 0.8) + 1.6 * Math.sin(x * 0.13 + y * 0.03),
 ];
 
 function drawStroke(g: CanvasRenderingContext2D, stroke: Stroke) {
@@ -60,14 +77,15 @@ function drawStroke(g: CanvasRenderingContext2D, stroke: Stroke) {
               (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t * t +
               (3 * p1[k] - p0[k] - 3 * p2[k] + p3[k]) * t * t * t)
           : p1[k] + (p2[k] - p1[k]) * t;
+      const [x, y] = warp(at(0), at(1));
       g.beginPath();
-      g.arc(at(0), at(1), Math.max(at(2) / 2, 0.02), 0, Math.PI * 2);
+      g.arc(x, y, Math.max(at(2) / 2, 0.02), 0, Math.PI * 2);
       g.fill();
     }
   }
 }
 
-export const LOGO = { x: 245, y: 148, w: 240, h: 106, center: [365, 200] as const };
+export const LOGO = { x: 222, y: 136, w: 296, h: 126, center: [370, 200] as const };
 const SCALE = 5;
 
 // Recorre el polÃ­gono con esquinas de radio corto: conserva las puntas afiladas del graffiti.
@@ -144,7 +162,8 @@ export function buildLogoField() {
 
   g.fillStyle = "#fff";
   for (const stroke of STROKES) drawStroke(g, stroke);
-  for (const [x, y] of HOLES) {
+  for (const [hx, hy] of HOLES) {
+    const [x, y] = warp(hx, hy);
     g.beginPath();
     g.arc(x, y, 5.4, 0, Math.PI * 2);
     g.fill();
@@ -153,7 +172,9 @@ export function buildLogoField() {
   outline(g, DOT);
   g.fill();
   g.globalCompositeOperation = "destination-out";
-  for (const [x, y, r] of HOLES) {
+  for (const cut of CUTS) drawStroke(g, cut);
+  for (const [hx, hy, r] of HOLES) {
+    const [x, y] = warp(hx, hy);
     g.beginPath();
     g.arc(x, y, r, 0, Math.PI * 2);
     g.fill();

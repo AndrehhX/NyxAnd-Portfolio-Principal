@@ -83,6 +83,12 @@ uniform float uWireScale;
 uniform vec4 uWireBox;
 uniform vec2 uWireRefAnchor;
 uniform vec2 uLight;
+uniform vec2 uPointerPx;
+uniform vec2 uPointerVel;
+uniform float uHover;
+uniform float uDeform;
+uniform float uMelt;
+uniform float uDim;
 
 const vec3 BASE = vec3(0.066);
 const vec3 SMOKE = vec3(0.30, 0.285, 0.26);
@@ -101,7 +107,7 @@ float hash(vec2 p) {
 void main() {
   vec2 frag = vUv * uRes;
   float v = texture(uLiquid, vUv).r;
-  vec3 col = ramp(v);
+  vec3 col = ramp(v) * (1.0 - uDim);
 
   vec2 pixel = vec2(frag.x, uRes.y - frag.y);
   vec2 pa = (pixel - uPanel.xy) / uPanel.zw;
@@ -118,6 +124,7 @@ void main() {
 
   // Alambres: oscuros sobre la crema, encendidos sobre el negro.
   vec2 wp = (pixel - uWireOrigin) / uWireScale + uWireRefAnchor;
+  wp += vec2(sin(wp.y * 0.035 + uTime * 0.6), sin(wp.x * 0.03 + uTime * 0.45)) * 1.5;
   vec2 wt = (wp - uWireBox.xy) / uWireBox.zw;
   if (wt.x > 0.0 && wt.x < 1.0 && wt.y > 0.0 && wt.y < 1.0) {
     vec4 w = texture(uWires, wt);
@@ -132,6 +139,14 @@ void main() {
 
   // Logo: acrilico biselado que refracta el liquido que pasa por detras.
   vec2 lp = (pixel - uLogoCenter) / uLogoScale + uLogoRefCenter;
+  // El cristal nunca queda quieto: ondula, se hincha bajo el puntero y se derrite al hacer scroll.
+  float wobbleAmp = 0.55 + uDeform * 11.0;
+  lp += vec2(sin(lp.y * 0.085 + lp.x * 0.02 + uTime * 0.7), sin(lp.x * 0.06 - uTime * 0.55 + 1.3)) * wobbleAmp;
+  lp += vec2(sin(lp.y * 0.21 - uTime * 0.9), sin(lp.x * 0.17 + uTime * 0.8)) * wobbleAmp * 0.35;
+  vec2 toTouch = lp - ((uPointerPx - uLogoCenter) / uLogoScale + uLogoRefCenter);
+  float touch = exp(-dot(toTouch, toTouch) / 1000.0) * uHover;
+  lp -= toTouch * touch * 0.3 + uPointerVel * touch;
+  lp.y -= uMelt * (14.0 + 26.0 * (0.5 + 0.5 * sin(lp.x * 0.31 + 0.7)) * (0.5 + 0.5 * sin(lp.x * 0.083 + 2.0)));
   vec2 lt = (lp - uLogoBox.xy) / uLogoBox.zw;
   if (lt.x > 0.0 && lt.x < 1.0 && lt.y > 0.0 && lt.y < 1.0) {
     float d = texture(uLogo, lt).r;
@@ -161,7 +176,7 @@ void main() {
 
       // Reflejo largo del liquido sobre la cara del cristal.
       float sheen = textureLod(uLiquid, vec2(vUv.x * 1.6 - 0.28, vUv.y * 0.55 + 0.22), 2.6).r;
-      float streak = 0.5 + 0.5 * sin(lp.x * 0.19 + lp.y * 0.05 + 1.1);
+      float streak = 0.5 + 0.5 * sin(lp.x * 0.19 + lp.y * 0.05 + 1.1 + uTime * 0.35);
       vec3 face = bg * mix(0.8, 1.12, bright);
       face += vec3(0.17, 0.165, 0.158) * (1.0 - bright) * (0.5 + 0.5 * streak);
       face += ramp(sheen) * 0.16 * (1.0 - bright);
@@ -176,7 +191,7 @@ void main() {
       // Sobre crema, las aristas que miran a la luz recuperan un filo blanco.
       c = mix(c, vec3(1.0, 0.98, 0.92), bright * smoothstep(0.55, 1.0, facing) * exp(-pow((d - 1.45) / 0.32, 2.0)) * 0.9);
       c = mix(c, vec3(0.03), edge * mix(0.62, 0.3, bright));
-      col = mix(col, c, cover);
+      col = mix(col, c, cover * (1.0 - smoothstep(0.55, 1.0, uMelt)));
     }
   }
 
