@@ -36,8 +36,8 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
   gl.bindVertexArray(vao);
 
   const floatTarget = !!gl.getExtension("EXT_color_buffer_float");
-  const FBO_W = 512;
-  const FBO_H = 288;
+  const FBO_W = 640;
+  const FBO_H = 360;
   const liquidTex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, liquidTex);
   gl.texStorage2D(gl.TEXTURE_2D, 5, floatTarget ? gl.RGBA16F : gl.RGBA8, FBO_W, FBO_H);
