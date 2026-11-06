@@ -1,4 +1,4 @@
-﻿export const VERT = /* glsl */ `#version 300 es
+export const VERT = /* glsl */ `#version 300 es
 out vec2 vUv;
 void main() {
   vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2);
@@ -37,10 +37,11 @@ void main() {
 
   float dark = 1.0;
   int start = 0;
+  float st = smoothstep(0.0, 6.0, uTime);
   for (int r = 0; r < ${count}; r++) {
     int end = uEnds[r];
     float best = 0.0;
-    float breathe = 1.0 + 0.12 * sin(uTime * 0.31 + float(r) * 1.7) * smoothstep(0.0, 6.0, uTime);
+    float breathe = 1.0 + 0.12 * sin(uTime * 0.31 + float(r) * 1.7) * st;
     for (int i = start; i < end - 1; i++) {
       vec4 a = uPts[i];
       vec4 b = uPts[i + 1];
@@ -48,12 +49,15 @@ void main() {
       float h = clamp(dot(q - a.xy, ab) / dot(ab, ab), 0.0, 1.0);
       vec2 c = a.xy + ab * h - q;
       float w = mix(a.z, b.z, h) * breathe * 1.16;
-      float amp = mix(a.w, b.w, h);
       float d2 = dot(c, c) / (w * w);
-      // NÃºcleo denso, caÃ­da suave y un halo ancho de humo alrededor.
-      float core = exp(-d2 * 0.62);
-      float halo = exp(-d2 * 0.1) * 0.15;
-      best = max(best, amp * max(core, halo));
+      // Saltar el cálculo trascendental de exp() para segmentos lejanos (visualmente idéntico)
+      if (d2 < 42.0) {
+        float amp = mix(a.w, b.w, h);
+        // Núcleo denso, caída suave y un halo ancho de humo alrededor.
+        float core = exp(-d2 * 0.62);
+        float halo = exp(-d2 * 0.1) * 0.15;
+        best = max(best, amp * max(core, halo));
+      }
     }
     dark *= 1.0 - best;
     start = end;
@@ -151,13 +155,6 @@ void main() {
   if (lt.x > 0.0 && lt.x < 1.0 && lt.y > 0.0 && lt.y < 1.0) {
     float d = texture(uLogo, lt).r;
     float aa = 0.75 / uLogoScale;
-    vec2 e = uLogoTexel * 1.5;
-    vec2 grad = vec2(
-      texture(uLogo, lt + vec2(e.x, 0.0)).r - texture(uLogo, lt - vec2(e.x, 0.0)).r,
-      texture(uLogo, lt + vec2(0.0, e.y)).r - texture(uLogo, lt - vec2(0.0, e.y)).r
-    );
-    float gl = length(grad);
-    vec2 g2 = gl > 1e-5 ? grad / gl : vec2(0.0);
 
     // Sombra de contacto, solo visible sobre zonas claras.
     float sv = dot(col, vec3(0.333));
@@ -165,6 +162,14 @@ void main() {
 
     float cover = smoothstep(-aa, aa, d);
     if (cover > 0.0) {
+      vec2 e = uLogoTexel * 1.5;
+      vec2 grad = vec2(
+        texture(uLogo, lt + vec2(e.x, 0.0)).r - texture(uLogo, lt - vec2(e.x, 0.0)).r,
+        texture(uLogo, lt + vec2(0.0, e.y)).r - texture(uLogo, lt - vec2(0.0, e.y)).r
+      );
+      float gl = length(grad);
+      vec2 g2 = gl > 1e-5 ? grad / gl : vec2(0.0);
+
       float bevel = clamp(d / 1.6, 0.0, 1.0);
       float slope = (1.0 - bevel) * (1.0 - bevel);
       vec2 nxy = -g2 * slope;

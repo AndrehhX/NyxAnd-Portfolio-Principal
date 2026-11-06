@@ -19,7 +19,7 @@ export function setupMotion(root: HTMLElement, reduced: boolean) {
     lenis = new Lenis({ lerp: 0.09 });
     lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add((t) => lenis!.raf(t * 1000));
-    gsap.ticker.lagSmoothing(0);
+    gsap.ticker.lagSmoothing(500, 33);
     document.documentElement.classList.add("lenis-on");
     // Acceso para depurar desde la consola.
     (window as unknown as { lenis?: Lenis }).lenis = lenis;
@@ -132,12 +132,18 @@ async function build(root: HTMLElement) {
   qa(".option").forEach((option) => {
     const rx = gsap.quickTo(option, "rotationX", { duration: 0.5, ease: "power3.out" });
     const ry = gsap.quickTo(option, "rotationY", { duration: 0.5, ease: "power3.out" });
+    let rect: DOMRect | null = null;
+    option.addEventListener("pointerenter", (e) => {
+      if (e.pointerType !== "touch") rect = option.getBoundingClientRect();
+    });
     option.addEventListener("pointermove", (e) => {
-      const r = option.getBoundingClientRect();
-      ry(((e.clientX - r.left) / r.width - 0.5) * 10);
-      rx(-((e.clientY - r.top) / r.height - 0.5) * 10);
+      if (e.pointerType === "touch") return;
+      if (!rect) rect = option.getBoundingClientRect();
+      ry(((e.clientX - rect.left) / rect.width - 0.5) * 10);
+      rx(-((e.clientY - rect.top) / rect.height - 0.5) * 10);
     });
     option.addEventListener("pointerleave", () => {
+      rect = null;
       rx(0);
       ry(0);
     });

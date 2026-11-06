@@ -47,12 +47,17 @@ export function setupAbout(root: HTMLElement, reduced: boolean) {
     gsap.fromTo(caption, { autoAlpha: 0, y: 8 }, { autoAlpha: 1, y: 0, duration: instant ? 0 : 0.6, onStart: () => void (caption.textContent = data[index].caption) });
   };
 
+  let lastSec = -1;
   const render = () => {
     const p = time / total;
     range.value = String(Math.round(p * 1000));
-    elapsed.textContent = fmt(time);
-    remaining.textContent = `-${fmt(total - time)}`;
     fill.style.transform = `scaleX(${p})`;
+    const currentSec = Math.floor(time);
+    if (currentSec !== lastSec) {
+      lastSec = currentSec;
+      elapsed.textContent = fmt(time);
+      remaining.textContent = `-${fmt(total - time)}`;
+    }
     layout(Math.min(n - 1, Math.floor(time / SLIDE_SECONDS)));
   };
   const goTo = (index: number) => {

@@ -144,11 +144,24 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
   let panelTop = 0;
   let dprNow = 1;
   const layout = { logoX: 0, logoY: 0, logoScale: 1, wireX: 0, wireY: 0, wireScale: 1 };
-  let maxDpr = matchMedia("(pointer: coarse)").matches ? 1.5 : 2;
+  const isTouchDevice =
+    matchMedia("(pointer: coarse)").matches ||
+    /iPad|iPhone|iPod|Android/i.test(navigator.userAgent) ||
+    (typeof navigator.maxTouchPoints === "number" && navigator.maxTouchPoints > 1);
+  let maxDpr = isTouchDevice ? 1.0 : Math.min(window.devicePixelRatio || 1, 1.5);
+  let lastW = 0;
+  let lastH = 0;
   const resize = () => {
     const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
-    canvas.width = Math.round(canvas.clientWidth * dpr);
-    canvas.height = Math.round(canvas.clientHeight * dpr);
+    const nw = Math.round(canvas.clientWidth * dpr);
+    const nh = Math.round(canvas.clientHeight * dpr);
+    if (Math.abs(nw - lastW) < 2 && Math.abs(nh - lastH) < 80 && lastW > 0) {
+      return;
+    }
+    lastW = nw;
+    lastH = nh;
+    canvas.width = nw;
+    canvas.height = nh;
     dprNow = dpr;
     const r = panel.getBoundingClientRect();
     panelTop = r.top + window.scrollY;
@@ -171,7 +184,7 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
 
   const start = performance.now();
   let logoStart = start;
-  // Si el equipo no llega a unos 40 fps, baja la resolucion una vez en lugar de dar tirones.
+  // Si el equipo no llega a unos 40 fps, baja la resolucion de inmediato en lugar de dar tirones.
   let last = start;
   let shotTaken = false;
   let clock = 0;
@@ -179,18 +192,33 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
   let glow = 0;
   let slowFrames = 0;
   let sampled = 0;
+  let isVisible = !document.hidden;
+  document.addEventListener("visibilitychange", () => {
+    isVisible = !document.hidden;
+    if (isVisible && !frozen) {
+      last = performance.now();
+      requestAnimationFrame(frame);
+    }
+  });
+
   const frame = (now: number) => {
+    if (!isVisible) return;
     const delta = now - last;
+    // En pantallas ProMotion de 120Hz (iPad Pro, iPhone Pro) limitar a ~60fps para evitar sobrecalentamiento
+    if (delta < 14) {
+      if (!frozen) requestAnimationFrame(frame);
+      return;
+    }
     last = now;
     timeScale += ((stage.paused ? 0 : 1) - timeScale) * 0.07;
     clock += (Math.min(delta, 100) / 1000) * timeScale;
     const t = frozen ? 0 : clock;
-    if (maxDpr > 1 && delta < 250) {
+    if (delta < 250) {
       sampled++;
-      if (delta > 25) slowFrames++;
-      if (sampled === 90) {
-        if (slowFrames > 45) {
-          maxDpr = 1;
+      if (delta > 22) slowFrames++;
+      if (sampled === 30) {
+        if (slowFrames > 12 && maxDpr > 0.8) {
+          maxDpr = Math.max(0.75, maxDpr - 0.25);
           resize();
         }
         sampled = 0;
@@ -259,7 +287,14 @@ export function createHero({ canvas, panel, frozen }: HeroOptions) {
       gl.uniform1f(C("uDim"), 0);
       gl.uniform1f(C("uReveal"), 1);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
-      canvas.toBlob(
+      const shotCanvas = document.createElement("canvas");
+      const shotW = 512;
+      const shotH = Math.max(128, Math.round(512 * (canvas.height / canvas.width)));
+      shotCanvas.width = shotW;
+      shotCanvas.height = shotH;
+      const sctx = shotCanvas.getContext("2d");
+      const targetCanvas = sctx ? (sctx.drawImage(canvas, 0, 0, shotW, shotH), shotCanvas) : canvas;
+      targetCanvas.toBlob(
         (blob) => {
           if (!blob) return;
           stage.shot = URL.createObjectURL(blob);
